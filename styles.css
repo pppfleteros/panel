@@ -249,6 +249,22 @@ main { max-width: 1080px; margin: 0 auto; padding: 22px 20px 60px; }
 .avg b.ambar { color: #B07A18; }
 .avg__k small { font-weight: 500; opacity: .7; }
 .avgs + .avgs { margin-top: 10px; }
+
+/* Vista de análisis de rechazos */
+.chart--link { cursor: pointer; transition: transform .15s ease, box-shadow .15s ease; }
+.chart--link:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(30,40,30,.12); }
+.chart__more {
+  margin-top: 12px; font-size: 12.5px; font-weight: 700; color: #1F7A46;
+  border-top: 1px dashed var(--line); padding-top: 10px;
+}
+.volver {
+  border: 1px solid var(--line); background: var(--paper); border-radius: 10px;
+  padding: 9px 16px; font-family: var(--font); font-size: 14px; font-weight: 700;
+  color: var(--ink); cursor: pointer; margin-bottom: 16px; box-shadow: var(--sh);
+}
+.volver:hover { background: #FAF7F0; }
+.bigmoney { font-size: 38px; font-weight: 800; color: #C2452F; letter-spacing: -.5px; }
+.chart__note { margin-top: 6px; font-size: 12.5px; color: var(--ink-2); }
 .view > .chart { margin-top: 18px; }
 .chart__track {
   display: block; height: 12px; border-radius: 6px; background: #F0EBDF; overflow: hidden;
