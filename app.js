@@ -185,6 +185,10 @@
   function fmtPlata(n) {
     return "$" + String(Math.round(n || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   }
+  function fmtMillones(n) {
+    if (n >= 1000000) return "$" + (Math.round(n / 100000) / 10).toString().replace(".", ",") + "M";
+    return "$" + Math.round(n / 1000) + " mil";
+  }
 
   // ---- Componentes visuales --------------------------------------------
   function anillo(pValue, etiqueta, sub) {
@@ -342,6 +346,24 @@
       }).join("");
       card.innerHTML = '<h2 class="chart__title">📋 Motivos de sus boletas rechazadas · ' + total + ' en total</h2>' + rows;
       cont.appendChild(card);
+    }
+
+    // Su entrega por proveedor (en plata)
+    var pfl = ((window.__PPP_DATA__ && window.__PPP_DATA__.proveedoresPorFletero) || {})[nombre] || [];
+    if (pfl.length) {
+      var maxP = 0;
+      pfl.forEach(function (p) { if (p.pct > maxP) maxP = p.pct; });
+      var cardP = el("div", "chart reveal");
+      var rowsP = pfl.map(function (p) {
+        var w = Math.max(4, Math.round(100 * p.pct / (maxP || 1)));
+        return '<div class="chart__row" title="' + p.prov.replace(/"/g, "&quot;") + ' · facturado ' + fmtMillones(p.fac) + '">' +
+          '<div class="chart__top"><span class="chart__label">' + p.prov + '</span>' +
+          '<b class="chart__val">' + p.pct + '% <span class="chart__cnt">(' + fmtMillones(p.fac) + ')</span></b></div>' +
+          '<i class="chart__track"><i class="rank__fill rank__fill--' + claseColor(p.pct) + '" style="width:2%" data-w="' + w + '"></i></i>' +
+        '</div>';
+      }).join("");
+      cardP.innerHTML = '<h2 class="chart__title">🏭 Su entrega por proveedor · en plata</h2>' + rowsP;
+      cont.appendChild(cardP);
     }
 
     return cont;
@@ -539,12 +561,26 @@
       return cont;
     }
 
-    // Plata rechazada del mes
+    // Plata del mes: facturado vs entregado vs rechazado
     var stat = el("div", "chart reveal");
-    stat.innerHTML =
-      '<h2 class="chart__title">💸 Plata rechazada en ' + mesNombre + '</h2>' +
-      '<div class="bigmoney">' + fmtPlata(an.importe) + '</div>' +
-      '<p class="chart__note">Suma de todas las notas de crédito por rechazo del mes (no incluye canjes).</p>';
+    var fact = an.facturado || 0;
+    if (fact > 0) {
+      var entregadoM = Math.max(0, fact - (an.importe || 0));
+      var pctEnt = Math.round(1000 * entregadoM / fact) / 10;
+      stat.innerHTML =
+        '<h2 class="chart__title">💵 La plata de ' + mesNombre + '</h2>' +
+        '<div class="money3">' +
+          '<div><span>Facturado</span><b>' + fmtPlata(fact) + '</b></div>' +
+          '<div><span>Entregado</span><b class="verde">' + fmtPlata(entregadoM) + '</b></div>' +
+          '<div><span>Rechazado</span><b class="rojo3">' + fmtPlata(an.importe) + '</b></div>' +
+        '</div>' +
+        '<p class="chart__note">Se entregó el <b>' + String(pctEnt).replace(".", ",") + '%</b> del monto facturado. El rechazado incluye también los productos sueltos devueltos (no los canjes).</p>';
+    } else {
+      stat.innerHTML =
+        '<h2 class="chart__title">💸 Plata rechazada en ' + mesNombre + '</h2>' +
+        '<div class="bigmoney">' + fmtPlata(an.importe) + '</div>' +
+        '<p class="chart__note">Suma de todas las notas de crédito por rechazo del mes (no incluye canjes).</p>';
+    }
     cont.appendChild(stat);
 
     function tarjeta(titulo, items) {
@@ -557,7 +593,7 @@
         return '<div class="chart__row"><div class="chart__top">' +
           '<span class="chart__label">' + it._l + '</span>' +
           '<b class="chart__val">' + it._t + '</b></div>' +
-          '<i class="chart__track"><i class="rank__fill rank__fill--low" style="width:2%" data-w="' + w + '"></i></i>' +
+          '<i class="chart__track"><i class="rank__fill rank__fill--' + (it._c || "low") + '" style="width:2%" data-w="' + w + '"></i></i>' +
         '</div>';
       }).join("");
       card.innerHTML = '<h2 class="chart__title">' + titulo + '</h2>' + rows;
@@ -575,13 +611,23 @@
     });
 
     var fila = el("div", "charts");
-    var tz = tarjeta("📍 % de rechazo por zona <span class='chart__cnt'>(boletas rechazadas sobre entregadas)</span>", zonas);
-    var tv = tarjeta("🧑‍💼 % de rechazo por vendedor <span class='chart__cnt'>(de las ventas que levantó)</span>", vendedores);
+    var tz = tarjeta("📍 % de rechazo por zona <span class='chart__cnt'>(ventas caídas completas)</span>", zonas);
+    var tv = tarjeta("🧑‍💼 % de rechazo por vendedor <span class='chart__cnt'>(ventas caídas completas)</span>", vendedores);
     if (tz) fila.appendChild(tz);
     if (tv) fila.appendChild(tv);
     if (tz || tv) cont.appendChild(fila);
+
+    // % entregado por proveedor (en plata) + clientes que más rechazan
+    var provs = (an.proveedores || []).map(function (p) {
+      return { _l: p.nombre, _v: p.pct, _c: claseColor(p.pct),
+        _t: p.pct + "% <span class='chart__cnt'>(" + fmtMillones(p.fac) + " facturado)</span>" };
+    });
+    var fila2 = el("div", "charts");
+    var tp = tarjeta("🏭 % entregado por proveedor <span class='chart__cnt'>(en plata)</span>", provs);
     var tc = tarjeta("🏪 Clientes que más rechazan", clientes);
-    if (tc) cont.appendChild(tc);
+    if (tp) fila2.appendChild(tp);
+    if (tc) fila2.appendChild(tc);
+    if (tp || tc) cont.appendChild(fila2);
 
     return cont;
   }
