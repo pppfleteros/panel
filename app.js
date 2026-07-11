@@ -378,10 +378,28 @@
     cont.appendChild(res);
     cont._rings = [aE.wrap, aR.wrap];
 
+    // Días hábiles (lunes a viernes) transcurridos del mes, hasta la última fecha con datos
+    var ultimaFecha = fechasTodas.length ? fechasTodas[fechasTodas.length - 1] : "";
+    var habiles = 0;
+    if (mesPrefijo && ultimaFecha) {
+      var aa = parseInt(mesPrefijo.slice(0, 4), 10), mm = parseInt(mesPrefijo.slice(5), 10);
+      var ultDia = parseInt(ultimaFecha.slice(8), 10);
+      for (var dd = 1; dd <= ultDia; dd++) {
+        var dow = new Date(aa, mm - 1, dd).getDay();
+        if (dow >= 1 && dow <= 5) habiles++;
+      }
+    }
+
     // Datos base para los rankings (total del mes en curso)
     var filas = nombres.map(function (n) {
-      var p = promedioPeriodo(delMes(datos.porFletero[n].regs));
-      return { nombre: n, zona: datos.porFletero[n].zona, efE: pct(p.efE), efR: pct(p.efR) };
+      var regsMes = delMes(datos.porFletero[n].regs);
+      var p = promedioPeriodo(regsMes);
+      // Asistencia: días distintos con reparto vs días hábiles transcurridos
+      var diasTrab = {};
+      regsMes.forEach(function (r) { if (r.entregas_asignadas > 0) diasTrab[r.fecha] = 1; });
+      var trab = Object.keys(diasTrab).length;
+      var asist = habiles > 0 ? Math.round(100 * trab / habiles) : null;
+      return { nombre: n, zona: datos.porFletero[n].zona, efE: pct(p.efE), efR: pct(p.efR), asist: asist, diasTrab: trab };
     });
 
     // Premios según la métrica y el porcentaje (reglas de la empresa).
@@ -403,7 +421,9 @@
     }
 
     // Un ranking por métrica: cada uno ordena y muestra solo su valor.
-    function tablaRanking(titulo, campo, etiqueta) {
+    // Sin 85% de asistencia (días con reparto / días hábiles) no se cobra premio.
+    var ASIST_MIN = 85;
+    function tablaRanking(titulo, campo, etiqueta, conAsist) {
       var lista = filas.filter(function (f) { return f[campo] != null; })
         .sort(function (a, b) { return (b[campo] || 0) - (a[campo] || 0); });
       if (!lista.length) return null;
@@ -411,29 +431,41 @@
       var tabla = el("div", "rank reveal");
       var head =
         '<div class="rank__head"><span>#</span><span>Fletero</span>' +
+        (conAsist ? '<span class="rank__num">Asist.</span>' : '') +
         '<span class="rank__num">Premio</span>' +
         '<span class="rank__num">' + etiqueta + '</span></div>';
       var body = lista.map(function (f, i) {
         var medal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : (i + 1);
         var bar = Math.max(4, Math.min(100, f[campo] || 0));
-        var premio = premioPara(campo, f[campo]);
+        var cumpleAsist = (f.asist == null || f.asist >= ASIST_MIN);
+        var premio = cumpleAsist ? premioPara(campo, f[campo]) : null;
         var premioHTML = premio == null
-          ? '<span class="rank__num rank__prize rank__prize--none">—</span>'
+          ? '<span class="rank__num rank__prize rank__prize--none"' +
+            (!cumpleAsist ? ' title="No cobra premio: asistencia menor al ' + ASIST_MIN + '%"' : '') + '>—</span>'
           : '<span class="rank__num rank__prize">💰 ' + fmtPremio(premio) + '</span>';
+        var asistHTML = "";
+        if (conAsist) {
+          asistHTML = f.asist == null
+            ? '<span class="rank__num rank__prize--none">—</span>'
+            : '<span class="rank__num"><span class="chip ' + (f.asist >= ASIST_MIN ? "chip--ok" : "chip--low") + '"' +
+              ' title="' + f.diasTrab + ' de ' + habiles + ' días hábiles">' + f.asist + '%</span></span>';
+        }
         return '<button class="rank__row" data-fletero="' + f.nombre.replace(/"/g, "&quot;") + '">' +
           '<span class="rank__pos">' + medal + '</span>' +
           '<span class="rank__name"><b>' + f.nombre + '</b>' +
             (f.zona ? '<em>' + f.zona + '</em>' : '') +
             '<i class="rank__track"><i class="rank__fill rank__fill--' + claseColor(f[campo]) + '" style="width:2%" data-w="' + bar + '"></i></i>' +
           '</span>' +
+          asistHTML +
           premioHTML +
           '<span class="rank__num">' + chip(f[campo]) + '</span>' +
         '</button>';
       }).join("");
       tabla.innerHTML =
         '<h2 class="rank__title">' + titulo + '</h2>' +
-        '<div class="rank__grid rank__grid--simple">' + head + body + '</div>' +
-        '<p class="rank__hint">Tocá un fletero para ver su detalle.</p>';
+        '<div class="rank__grid ' + (conAsist ? "rank__grid--asist" : "rank__grid--simple") + '">' + head + body + '</div>' +
+        '<p class="rank__hint">Tocá un fletero para ver su detalle.' +
+        (conAsist ? ' Asistencia: días con reparto sobre los ' + habiles + ' días hábiles que van de ' + mesNombre + ' — con menos de ' + ASIST_MIN + '% no se cobra premio.' : '') + '</p>';
       return tabla;
     }
 
@@ -486,8 +518,8 @@
       cont.appendChild(fila);
     }
 
-    var rankE = tablaRanking("🚚 Ranking · Efectividad de entrega · total " + mesNombre, "efE", "Entrega");
-    var rankR = tablaRanking("📦 Ranking · Retorno de cartón · total " + mesNombre, "efR", "Cartón");
+    var rankE = tablaRanking("🚚 Ranking · Efectividad de entrega · total " + mesNombre, "efE", "Entrega", true);
+    var rankR = tablaRanking("📦 Ranking · Retorno de cartón · total " + mesNombre, "efR", "Cartón", false);
     if (rankE) cont.appendChild(rankE);
     if (rankR) cont.appendChild(rankR);
 
