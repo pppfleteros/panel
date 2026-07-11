@@ -309,7 +309,6 @@
     if (st) {
       celdas.push('<div class="avg"><span class="avg__k">Clientes rechazados completos</span><b class="rojo">' + st.recTot + '</b></div>');
       celdas.push('<div class="avg"><span class="avg__k">Boletas rechazadas completas</span><b class="ambar">' + st.recBol + '</b></div>');
-      celdas.push('<div class="avg"><span class="avg__k">Productos sueltos rechazados <small>(no descuentan)</small></span><b>' + (st.prodSuel || 0) + '</b></div>');
       celdas.push('<div class="avg"><span class="avg__k">Clientes entregados · ' + mesNombre + '</span><b>' + st.cliEnt + ' / ' + st.cliSac + '</b></div>');
       celdas.push('<div class="avg"><span class="avg__k">Boletas entregadas · ' + mesNombre + '</span><b>' + st.compEnt + ' / ' + st.compSac + '</b></div>');
     }
