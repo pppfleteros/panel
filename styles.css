@@ -272,6 +272,12 @@ main { max-width: 1080px; margin: 0 auto; padding: 22px 20px 60px; }
 }
 .volver:hover { background: #FAF7F0; }
 .bigmoney { font-size: 38px; font-weight: 800; color: #C2452F; letter-spacing: -.5px; }
+.money3 { display: flex; gap: 28px; flex-wrap: wrap; margin: 6px 0 4px; }
+.money3 > div { display: flex; flex-direction: column; gap: 2px; }
+.money3 span { font-size: 11.5px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-2); }
+.money3 b { font-size: 24px; font-weight: 800; letter-spacing: -.4px; }
+.money3 .verde { color: #1F7A46; }
+.money3 .rojo3 { color: #C2452F; }
 .chart__note { margin-top: 6px; font-size: 12.5px; color: var(--ink-2); }
 .view > .chart { margin-top: 18px; }
 .chart__track {
