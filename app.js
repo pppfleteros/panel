@@ -182,6 +182,10 @@
   var NOMBRES_MES = ["enero", "febrero", "marzo", "abril", "mayo", "junio",
     "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
 
+  function fmtPlata(n) {
+    return "$" + String(Math.round(n || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  }
+
   // ---- Componentes visuales --------------------------------------------
   function anillo(pValue, etiqueta, sub) {
     var p = pValue == null ? 0 : Math.max(0, Math.min(100, pValue));
@@ -466,6 +470,15 @@
     // Tarjetas gráficas de rechazos, ARRIBA de los rankings.
     var gMot = graficoBarras("📋 Motivos de rechazo más comunes", topMotivos, "rechazos");
     var gRech = graficoBarras("⚠️ Rechazos totales de cliente · " + mesNombre, rechazosPorFletero, "clientes");
+    if (gRech) {
+      gRech.classList.add("chart--link");
+      gRech.innerHTML += '<p class="chart__more">Tocá acá para ver el análisis completo: zonas, vendedores, clientes y plata →</p>';
+      gRech.addEventListener("click", function () {
+        seleccionar("__rechazos__");
+        var sel = $("#selector"); if (sel) sel.value = "__general__";
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+    }
     if (gMot || gRech) {
       var fila = el("div", "charts");
       if (gMot) fila.appendChild(gMot);
@@ -477,6 +490,74 @@
     var rankR = tablaRanking("📦 Ranking · Retorno de cartón · total " + mesNombre, "efR", "Cartón");
     if (rankE) cont.appendChild(rankE);
     if (rankR) cont.appendChild(rankR);
+
+    return cont;
+  }
+
+  // Vista de análisis de rechazos (se abre tocando la tarjeta del resumen)
+  function vistaRechazos(datos) {
+    var cont = el("div", "view");
+    var an = (window.__PPP_DATA__ && window.__PPP_DATA__.analisisRechazos) || null;
+    var fechasT = fechasUnicas(datos.registros);
+    var mesPrefijo = fechasT.length ? fechasT[fechasT.length - 1].slice(0, 7) : "";
+    var mesNombre = mesPrefijo ? NOMBRES_MES[parseInt(mesPrefijo.slice(5), 10) - 1] : "mes";
+
+    var volver = el("button", "volver", "← Volver al resumen");
+    volver.addEventListener("click", function () {
+      seleccionar("__general__");
+      var sel = $("#selector"); if (sel) sel.value = "__general__";
+    });
+    cont.appendChild(volver);
+    cont.appendChild(el("h2", "rank__title", "🔎 Análisis de rechazos · " + mesNombre));
+
+    if (!an) {
+      cont.appendChild(el("p", "muted", "Todavía no hay datos de análisis (falta cargar el reporte de ventas)."));
+      return cont;
+    }
+
+    // Plata rechazada del mes
+    var stat = el("div", "chart reveal");
+    stat.innerHTML =
+      '<h2 class="chart__title">💸 Plata rechazada en ' + mesNombre + '</h2>' +
+      '<div class="bigmoney">' + fmtPlata(an.importe) + '</div>' +
+      '<p class="chart__note">Suma de todas las notas de crédito por rechazo del mes (no incluye canjes).</p>';
+    cont.appendChild(stat);
+
+    function tarjeta(titulo, items) {
+      if (!items || !items.length) return null;
+      var max = 0;
+      items.forEach(function (it) { if (it._v > max) max = it._v; });
+      var card = el("div", "chart reveal");
+      var rows = items.map(function (it) {
+        var w = Math.max(4, Math.round(100 * it._v / (max || 1)));
+        return '<div class="chart__row"><div class="chart__top">' +
+          '<span class="chart__label">' + it._l + '</span>' +
+          '<b class="chart__val">' + it._t + '</b></div>' +
+          '<i class="chart__track"><i class="rank__fill rank__fill--low" style="width:2%" data-w="' + w + '"></i></i>' +
+        '</div>';
+      }).join("");
+      card.innerHTML = '<h2 class="chart__title">' + titulo + '</h2>' + rows;
+      return card;
+    }
+
+    var zonas = (an.zonas || []).map(function (z) {
+      return { _l: z.nombre, _v: z.pct, _t: z.pct + "% <span class='chart__cnt'>(" + z.rech + " de " + z.sac + ")</span>" };
+    });
+    var vendedores = (an.vendedores || []).map(function (v) {
+      return { _l: v.nombre, _v: v.pct, _t: v.pct + "% <span class='chart__cnt'>(" + v.rech + " de " + v.sac + ")</span>" };
+    });
+    var clientes = (an.clientes || []).map(function (c) {
+      return { _l: c.nombre + (c.loc ? " · " + c.loc : ""), _v: c.cantidad, _t: c.cantidad + " rechazos" };
+    });
+
+    var fila = el("div", "charts");
+    var tz = tarjeta("📍 % de rechazo por zona <span class='chart__cnt'>(boletas rechazadas sobre entregadas)</span>", zonas);
+    var tv = tarjeta("🧑‍💼 % de rechazo por vendedor <span class='chart__cnt'>(de las ventas que levantó)</span>", vendedores);
+    if (tz) fila.appendChild(tz);
+    if (tv) fila.appendChild(tv);
+    if (tz || tv) cont.appendChild(fila);
+    var tc = tarjeta("🏪 Clientes que más rechazan", clientes);
+    if (tc) cont.appendChild(tc);
 
     return cont;
   }
@@ -507,8 +588,8 @@
     var main = $("#panel");
     if (!main) return;
     main.innerHTML = "";
-    var v = STATE.seleccion === "__general__"
-      ? vistaGeneral(STATE.datos)
+    var v = STATE.seleccion === "__general__" ? vistaGeneral(STATE.datos)
+      : STATE.seleccion === "__rechazos__" ? vistaRechazos(STATE.datos)
       : vistaFletero(STATE.datos, STATE.seleccion);
     main.appendChild(v);
 
