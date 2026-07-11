@@ -318,8 +318,8 @@
     if (st) {
       var proms2 = el("div", "avgs reveal");
       proms2.innerHTML =
-        '<div class="avg"><span class="avg__k">Rechazos totales <small>(cliente completo)</small></span><b class="rojo">' + st.recTot + '</b></div>' +
-        '<div class="avg"><span class="avg__k">Rechazos parciales <small>(alguna boleta)</small></span><b class="ambar">' + st.recPar + '</b></div>' +
+        '<div class="avg"><span class="avg__k">Clientes rechazados completos <small>(no recibieron nada)</small></span><b class="rojo">' + st.recTot + '</b></div>' +
+        '<div class="avg"><span class="avg__k">Boletas rechazadas completas <small>(los productos sueltos no cuentan)</small></span><b class="ambar">' + st.recBol + '</b></div>' +
         '<div class="avg"><span class="avg__k">Clientes entregados · ' + mesNombre + '</span><b>' + st.cliEnt + ' / ' + st.cliSac + '</b></div>' +
         '<div class="avg"><span class="avg__k">Boletas entregadas · ' + mesNombre + '</span><b>' + st.compEnt + ' / ' + st.compSac + '</b></div>';
       cont.appendChild(proms2);
