@@ -283,7 +283,6 @@
     var mesPrefijo = fechasTodas.length ? fechasTodas[fechasTodas.length - 1].slice(0, 7) : "";
     var mesNombre = mesPrefijo ? NOMBRES_MES[parseInt(mesPrefijo.slice(5), 10) - 1] : "mes";
     var promMes = promedioPeriodo(g.regs.filter(function (r) { return r.fecha.indexOf(mesPrefijo) === 0; }));
-    var prom = promedioPeriodo(soloUltimasFechas(g.regs, fechasTodas, DIAS));
 
     // Encabezado del fletero
     var head = el("div", "person");
@@ -304,26 +303,20 @@
     cont.appendChild(grid);
     cont._rings = [aE.wrap, aR.wrap];
 
-    // Promedios y contadores
-    var proms = el("div", "avgs reveal");
-    proms.innerHTML =
-      '<div class="avg"><span class="avg__k">Promedio ' + DIAS + ' días · Entrega</span>' + chip(pct(prom.efE)) + '</div>' +
-      '<div class="avg"><span class="avg__k">Promedio ' + DIAS + ' días · Cartón</span>' + chip(pct(prom.efR)) + '</div>' +
-      '<div class="avg"><span class="avg__k">Entregas de ' + mesNombre + '</span><b>' + promMes.entregas + ' / ' + promMes.asignadas + '</b></div>' +
-      '<div class="avg"><span class="avg__k">Cartones de ' + mesNombre + '</span><b>' + promMes.cartones + ' / ' + promMes.cartonesTot + '</b></div>';
-    cont.appendChild(proms);
-
-    // Estadísticas del mes: rechazos totales/parciales, clientes y boletas
+    // Estadísticas del mes
     var st = ((window.__PPP_DATA__ && window.__PPP_DATA__.estadisticasFletero) || {})[nombre];
+    var celdas = [];
     if (st) {
-      var proms2 = el("div", "avgs reveal");
-      proms2.innerHTML =
-        '<div class="avg"><span class="avg__k">Clientes rechazados completos <small>(no recibieron nada)</small></span><b class="rojo">' + st.recTot + '</b></div>' +
-        '<div class="avg"><span class="avg__k">Boletas rechazadas completas <small>(los productos sueltos no cuentan)</small></span><b class="ambar">' + st.recBol + '</b></div>' +
-        '<div class="avg"><span class="avg__k">Clientes entregados · ' + mesNombre + '</span><b>' + st.cliEnt + ' / ' + st.cliSac + '</b></div>' +
-        '<div class="avg"><span class="avg__k">Boletas entregadas · ' + mesNombre + '</span><b>' + st.compEnt + ' / ' + st.compSac + '</b></div>';
-      cont.appendChild(proms2);
+      celdas.push('<div class="avg"><span class="avg__k">Clientes rechazados completos</span><b class="rojo">' + st.recTot + '</b></div>');
+      celdas.push('<div class="avg"><span class="avg__k">Boletas rechazadas completas</span><b class="ambar">' + st.recBol + '</b></div>');
+      celdas.push('<div class="avg"><span class="avg__k">Productos sueltos rechazados <small>(no descuentan)</small></span><b>' + (st.prodSuel || 0) + '</b></div>');
+      celdas.push('<div class="avg"><span class="avg__k">Clientes entregados · ' + mesNombre + '</span><b>' + st.cliEnt + ' / ' + st.cliSac + '</b></div>');
+      celdas.push('<div class="avg"><span class="avg__k">Boletas entregadas · ' + mesNombre + '</span><b>' + st.compEnt + ' / ' + st.compSac + '</b></div>');
     }
+    celdas.push('<div class="avg"><span class="avg__k">Cartones de ' + mesNombre + '</span><b>' + promMes.cartones + ' / ' + promMes.cartonesTot + '</b></div>');
+    var proms2 = el("div", "avgs reveal");
+    proms2.innerHTML = celdas.join("");
+    cont.appendChild(proms2);
 
     // Mini gráficos
     var sparks = el("div", "sparks reveal");
