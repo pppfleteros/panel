@@ -392,13 +392,14 @@
     cont.appendChild(res);
     cont._rings = [aE.wrap, aR.wrap];
 
-    // Días hábiles (lunes a viernes) transcurridos del mes, hasta la última fecha con datos
+    // Días hábiles (lunes a viernes) del mes, con UN DÍA DE ATRASO: el último día
+    // con datos no cuenta porque sus viajes todavía no están cerrados.
     var ultimaFecha = fechasTodas.length ? fechasTodas[fechasTodas.length - 1] : "";
     var habiles = 0;
     if (mesPrefijo && ultimaFecha) {
       var aa = parseInt(mesPrefijo.slice(0, 4), 10), mm = parseInt(mesPrefijo.slice(5), 10);
       var ultDia = parseInt(ultimaFecha.slice(8), 10);
-      for (var dd = 1; dd <= ultDia; dd++) {
+      for (var dd = 1; dd < ultDia; dd++) {   // < : excluye el día en curso
         var dow = new Date(aa, mm - 1, dd).getDay();
         if (dow >= 1 && dow <= 5) habiles++;
       }
@@ -408,11 +409,13 @@
     var filas = nombres.map(function (n) {
       var regsMes = delMes(datos.porFletero[n].regs);
       var p = promedioPeriodo(regsMes);
-      // Asistencia: días distintos con reparto vs días hábiles transcurridos
+      // Asistencia: días con reparto (sin contar el día en curso) vs días hábiles cerrados
       var diasTrab = {};
-      regsMes.forEach(function (r) { if (r.entregas_asignadas > 0) diasTrab[r.fecha] = 1; });
+      regsMes.forEach(function (r) {
+        if (r.entregas_asignadas > 0 && r.fecha !== ultimaFecha) diasTrab[r.fecha] = 1;
+      });
       var trab = Object.keys(diasTrab).length;
-      var asist = habiles > 0 ? Math.round(100 * trab / habiles) : null;
+      var asist = habiles > 0 ? Math.min(100, Math.round(100 * trab / habiles)) : null;
       return { nombre: n, zona: datos.porFletero[n].zona, efE: pct(p.efE), efR: pct(p.efR), asist: asist, diasTrab: trab };
     });
 
@@ -479,7 +482,7 @@
         '<h2 class="rank__title">' + titulo + '</h2>' +
         '<div class="rank__grid ' + (conAsist ? "rank__grid--asist" : "rank__grid--simple") + '">' + head + body + '</div>' +
         '<p class="rank__hint">Tocá un fletero para ver su detalle.' +
-        (conAsist ? ' Asistencia: días con reparto sobre los ' + habiles + ' días hábiles que van de ' + mesNombre + ' — con menos de ' + ASIST_MIN + '% no se cobra premio.' : '') + '</p>';
+        (conAsist ? ' Asistencia: días con reparto sobre los ' + habiles + ' días hábiles cerrados de ' + mesNombre + ' (el día en curso no cuenta) — con menos de ' + ASIST_MIN + '% no se cobra premio.' : '') + '</p>';
       return tabla;
     }
 
