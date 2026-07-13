@@ -1,5 +1,5 @@
 /* GENERADO AUTOMATICAMENTE por robot-actualizar-web.ps1 - NO EDITAR A MANO
-   Ultima actualizacion: 2026-07-13 12:11 */
+   Ultima actualizacion: 2026-07-13 12:14 */
 window.__PPP_CONFIG__ = {
   SHEET_CSV_URL: "",
   umbrales: { bueno: 90, medio: 75 },
@@ -272,7 +272,6 @@ window.__PPP_DATA__ = { registros: [
 ,{"fecha":"2026-07-13","fletero":"Alan Perez","zona":"","entregas_asignadas":49,"entregas_realizadas":49,"cartones_a_retornar":87,"cartones_retornados":76}
 ,{"fecha":"2026-07-13","fletero":"Ariel Riveros","zona":"","entregas_asignadas":59,"entregas_realizadas":59,"cartones_a_retornar":70,"cartones_retornados":1}
 ,{"fecha":"2026-07-13","fletero":"Carlos Crespo","zona":"","entregas_asignadas":36,"entregas_realizadas":36,"cartones_a_retornar":0,"cartones_retornados":0}
-,{"fecha":"2026-07-13","fletero":"Carlos Guillermo Escudero","zona":"","entregas_asignadas":61,"entregas_realizadas":61,"cartones_a_retornar":0,"cartones_retornados":0}
 ,{"fecha":"2026-07-13","fletero":"Claudio Ponce","zona":"","entregas_asignadas":41,"entregas_realizadas":41,"cartones_a_retornar":0,"cartones_retornados":0}
 ,{"fecha":"2026-07-13","fletero":"Cristian Carrizo","zona":"","entregas_asignadas":48,"entregas_realizadas":48,"cartones_a_retornar":0,"cartones_retornados":0}
 ,{"fecha":"2026-07-13","fletero":"Daniel Mendoza","zona":"","entregas_asignadas":57,"entregas_realizadas":57,"cartones_a_retornar":0,"cartones_retornados":0}
