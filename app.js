@@ -521,7 +521,7 @@
     var gRech = graficoBarras("⚠️ Rechazos totales de cliente · " + mesNombre, rechazosPorFletero, "clientes");
     if (gRech) {
       gRech.classList.add("chart--link");
-      gRech.innerHTML += '<p class="chart__more">Tocá acá para ver el análisis completo: zonas, vendedores, clientes y plata →</p>';
+      gRech.innerHTML += '<p class="chart__more">Tocá acá para ver el análisis completo: zonas, vendedores y clientes →</p>';
       gRech.addEventListener("click", function () {
         seleccionar("__rechazos__");
         var sel = $("#selector"); if (sel) sel.value = "__general__";
@@ -563,14 +563,6 @@
       cont.appendChild(el("p", "muted", "Todavía no hay datos de análisis (falta cargar el reporte de ventas)."));
       return cont;
     }
-
-    // Plata rechazada del mes (los montos facturados no se muestran: dato privado)
-    var stat = el("div", "chart reveal");
-    stat.innerHTML =
-      '<h2 class="chart__title">💸 Plata rechazada en ' + mesNombre + '</h2>' +
-      '<div class="bigmoney">' + fmtPlata(an.importe) + '</div>' +
-      '<p class="chart__note">Suma de todas las notas de crédito por rechazo del mes, productos sueltos incluidos (no los canjes).</p>';
-    cont.appendChild(stat);
 
     function tarjeta(titulo, items) {
       if (!items || !items.length) return null;
