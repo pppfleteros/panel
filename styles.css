@@ -246,7 +246,8 @@ body {
 .controls { background: rgba(27, 38, 32, .88); border-bottom-color: rgba(255, 255, 255, .07); }
 .controls label { color: #B8C6BC; }
 .rank__title { color: #F2EFE6; }
-.rank__hint { color: rgba(242, 239, 230, .62); }
+.rank__hint { color: #FFFFFF; }
+.rank__hint b { color: #8FD6AE; }
 .foot { color: rgba(242, 239, 230, .5); }
 .foot b { color: #8FD6AE; }
 .muted { color: rgba(242, 239, 230, .75); }
