@@ -440,7 +440,7 @@
     // Un ranking por métrica: cada uno ordena y muestra solo su valor.
     // Sin 85% de asistencia (días con reparto / días hábiles) no se cobra premio.
     var ASIST_MIN = 85;
-    function tablaRanking(titulo, campo, etiqueta, conAsist) {
+    function tablaRanking(titulo, campo, etiqueta, conAsist, premiosTxt) {
       var lista = filas.filter(function (f) { return f[campo] != null; })
         .sort(function (a, b) { return (b[campo] || 0) - (a[campo] || 0); });
       if (!lista.length) return null;
@@ -482,7 +482,7 @@
         '<h2 class="rank__title">' + titulo + '</h2>' +
         '<div class="rank__grid ' + (conAsist ? "rank__grid--asist" : "rank__grid--simple") + '">' + head + body + '</div>' +
         '<p class="rank__hint">Tocá un fletero para ver su detalle.' +
-        (conAsist ? ' Asistencia: días con reparto sobre los ' + habiles + ' días hábiles cerrados de ' + mesNombre + ' (el día en curso no cuenta) — con menos de ' + ASIST_MIN + '% no se cobra premio.' : '') + '</p>';
+        (premiosTxt ? ' ' + premiosTxt : '') + '</p>';
       return tabla;
     }
 
@@ -535,8 +535,10 @@
       cont.appendChild(fila);
     }
 
-    var rankE = tablaRanking("🚚 Ranking · Efectividad de entrega · total " + mesNombre, "efE", "Entrega", true);
-    var rankR = tablaRanking("📦 Ranking · Retorno de cartón · total " + mesNombre, "efR", "Cartón", false);
+    var rankE = tablaRanking("🚚 Ranking · Efectividad de entrega · total " + mesNombre, "efE", "Entrega", true,
+      "💰 Premios por efectividad de entrega: de 90% a 94,99% cobrás <b>$50.000</b> · de 95% a 100% cobrás <b>$100.000</b>. Requisito: " + ASIST_MIN + "% de asistencia o más.");
+    var rankR = tablaRanking("📦 Ranking · Retorno de cartón · total " + mesNombre, "efR", "Cartón", false,
+      "💰 Premios por retorno de cartón: de 60% a 69,99% cobrás <b>$50.000</b> · de 70% a 79,99% cobrás <b>$100.000</b> · de 80% a 100% cobrás <b>$150.000</b>. Requisito: " + ASIST_MIN + "% de asistencia o más.");
     if (rankE) cont.appendChild(rankE);
     if (rankR) cont.appendChild(rankR);
 
