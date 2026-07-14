@@ -237,6 +237,22 @@ main { max-width: 1080px; margin: 0 auto; padding: 22px 20px 60px; }
     grid-template-columns: 24px 1fr 56px 76px 58px; gap: 5px; padding: 11px 8px;
   }
 }
+
+/* ---------- Fondo oscuro con patrón de reparto ---------- */
+body {
+  background-color: #24302A;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260' viewBox='0 0 260 260'%3E%3Cg fill='none' stroke='%232E3D35' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cg transform='translate(18 30) rotate(-8)'%3E%3Crect x='0' y='6' width='34' height='20' rx='2'/%3E%3Cpath d='M34 12h12l8 8v6h-20z'/%3E%3Ccircle cx='10' cy='30' r='4'/%3E%3Ccircle cx='42' cy='30' r='4'/%3E%3C/g%3E%3Cg transform='translate(180 70) rotate(10)'%3E%3Crect x='0' y='0' width='26' height='22' rx='2'/%3E%3Cpath d='M13 0v22M0 7h26'/%3E%3C/g%3E%3Cg transform='translate(40 180) rotate(6)'%3E%3Crect x='0' y='14' width='20' height='16' rx='2'/%3E%3Crect x='22' y='14' width='20' height='16' rx='2'/%3E%3Crect x='11' y='-4' width='20' height='16' rx='2'/%3E%3C/g%3E%3Cg transform='translate(208 16)'%3E%3Cpath d='M12 0c6 0 11 5 11 11 0 8-11 19-11 19S1 19 1 11C1 5 6 0 12 0z'/%3E%3Ccircle cx='12' cy='11' r='4'/%3E%3C/g%3E%3Cpath d='M95 140c30-18 60 14 92-6' stroke-dasharray='2 7'/%3E%3Cg transform='translate(190 195) rotate(-9)'%3E%3Crect x='0' y='0' width='30' height='20' rx='2'/%3E%3Cpath d='M4 5h22M4 10h22M4 15h14'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+.controls { background: rgba(27, 38, 32, .88); border-bottom-color: rgba(255, 255, 255, .07); }
+.controls label { color: #B8C6BC; }
+.rank__title { color: #F2EFE6; }
+.rank__hint { color: rgba(242, 239, 230, .62); }
+.foot { color: rgba(242, 239, 230, .5); }
+.foot b { color: #8FD6AE; }
+.muted { color: rgba(242, 239, 230, .75); }
+.person__name { color: #F2EFE6; }
+.person__meta { color: rgba(242, 239, 230, .6); }
+#splash { background: #24302A; color: #F2EFE6; }
 .rank + .rank { margin-top: 26px; }
 .rank__prize { font-size: 13px; font-weight: 800; color: #1F7A46; white-space: nowrap; }
 /* Tarjetas gráficas de rechazos (barras horizontales) */
