@@ -1,5 +1,5 @@
 /* GENERADO AUTOMATICAMENTE por robot-actualizar-web.ps1 - NO EDITAR A MANO
-   Ultima actualizacion: 2026-07-14 13:51 */
+   Ultima actualizacion: 2026-07-14 13:54 */
 window.__PPP_CONFIG__ = {
   SHEET_CSV_URL: "",
   umbrales: { bueno: 90, medio: 75 },
