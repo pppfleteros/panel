@@ -1,5 +1,5 @@
 /* GENERADO AUTOMATICAMENTE por robot-actualizar-web.ps1 - NO EDITAR A MANO
-   Ultima actualizacion: 2026-07-14 13:55 */
+   Ultima actualizacion: 2026-07-14 13:56 */
 window.__PPP_CONFIG__ = {
   SHEET_CSV_URL: "",
   umbrales: { bueno: 90, medio: 75 },
@@ -253,19 +253,16 @@ window.__PPP_DATA__ = { registros: [
 ,{"fecha":"2026-07-13","fletero":"David Alvarez","zona":"","entregas_asignadas":55,"entregas_realizadas":55,"cartones_a_retornar":72,"cartones_retornados":14}
 ,{"fecha":"2026-07-13","fletero":"Gabriel Flores","zona":"","entregas_asignadas":52,"entregas_realizadas":52,"cartones_a_retornar":0,"cartones_retornados":0}
 ,{"fecha":"2026-07-13","fletero":"Guillermo Guzman","zona":"","entregas_asignadas":47,"entregas_realizadas":47,"cartones_a_retornar":72,"cartones_retornados":52}
-,{"fecha":"2026-07-13","fletero":"Hector","zona":"","entregas_asignadas":0,"entregas_realizadas":0,"cartones_a_retornar":90,"cartones_retornados":66}
-,{"fecha":"2026-07-13","fletero":"Hector Roldan","zona":"","entregas_asignadas":63,"entregas_realizadas":63,"cartones_a_retornar":0,"cartones_retornados":0}
+,{"fecha":"2026-07-13","fletero":"Hector Roldan","zona":"","entregas_asignadas":63,"entregas_realizadas":63,"cartones_a_retornar":90,"cartones_retornados":66}
 ,{"fecha":"2026-07-13","fletero":"Javier Sotelo","zona":"","entregas_asignadas":51,"entregas_realizadas":51,"cartones_a_retornar":80,"cartones_retornados":37}
-,{"fecha":"2026-07-13","fletero":"Jonathan Pinazo","zona":"","entregas_asignadas":50,"entregas_realizadas":50,"cartones_a_retornar":0,"cartones_retornados":0}
-,{"fecha":"2026-07-13","fletero":"Joni P","zona":"","entregas_asignadas":0,"entregas_realizadas":0,"cartones_a_retornar":59,"cartones_retornados":7}
+,{"fecha":"2026-07-13","fletero":"Jonathan Pinazo","zona":"","entregas_asignadas":50,"entregas_realizadas":50,"cartones_a_retornar":59,"cartones_retornados":7}
 ,{"fecha":"2026-07-13","fletero":"Julio Moran","zona":"","entregas_asignadas":49,"entregas_realizadas":49,"cartones_a_retornar":52,"cartones_retornados":39}
 ,{"fecha":"2026-07-13","fletero":"Leandro Sanchez","zona":"","entregas_asignadas":57,"entregas_realizadas":57,"cartones_a_retornar":73,"cartones_retornados":59}
 ,{"fecha":"2026-07-13","fletero":"Lucas Calvo","zona":"","entregas_asignadas":0,"entregas_realizadas":0,"cartones_a_retornar":91,"cartones_retornados":23}
 ,{"fecha":"2026-07-13","fletero":"Lucas Guiering","zona":"","entregas_asignadas":0,"entregas_realizadas":0,"cartones_a_retornar":65,"cartones_retornados":20}
 ,{"fecha":"2026-07-13","fletero":"Lucas Matias Rodriguez","zona":"","entregas_asignadas":59,"entregas_realizadas":59,"cartones_a_retornar":67,"cartones_retornados":24}
 ,{"fecha":"2026-07-13","fletero":"Matias Amaya","zona":"","entregas_asignadas":57,"entregas_realizadas":57,"cartones_a_retornar":80,"cartones_retornados":62}
-,{"fecha":"2026-07-13","fletero":"Maxi","zona":"","entregas_asignadas":0,"entregas_realizadas":0,"cartones_a_retornar":30,"cartones_retornados":0}
-,{"fecha":"2026-07-13","fletero":"Maximiliano Pinazo","zona":"","entregas_asignadas":7,"entregas_realizadas":7,"cartones_a_retornar":0,"cartones_retornados":0}
+,{"fecha":"2026-07-13","fletero":"Maximiliano Pinazo","zona":"","entregas_asignadas":7,"entregas_realizadas":7,"cartones_a_retornar":30,"cartones_retornados":0}
 ,{"fecha":"2026-07-13","fletero":"Nicolas Oviedo","zona":"","entregas_asignadas":48,"entregas_realizadas":48,"cartones_a_retornar":84,"cartones_retornados":17}
 ,{"fecha":"2026-07-13","fletero":"Pablo Moyano","zona":"","entregas_asignadas":51,"entregas_realizadas":51,"cartones_a_retornar":78,"cartones_retornados":22}
 ,{"fecha":"2026-07-13","fletero":"Rodrigo Calo","zona":"","entregas_asignadas":0,"entregas_realizadas":0,"cartones_a_retornar":56,"cartones_retornados":10}
@@ -274,7 +271,7 @@ window.__PPP_DATA__ = { registros: [
 ,{"fecha":"2026-07-14","fletero":"Ariel Riveros","zona":"","entregas_asignadas":0,"entregas_realizadas":0,"cartones_a_retornar":88,"cartones_retornados":20}
 ,{"fecha":"2026-07-14","fletero":"Carlos Crespo","zona":"","entregas_asignadas":1,"entregas_realizadas":1,"cartones_a_retornar":0,"cartones_retornados":0}
 ,{"fecha":"2026-07-14","fletero":"Daniel Mendoza","zona":"","entregas_asignadas":1,"entregas_realizadas":1,"cartones_a_retornar":0,"cartones_retornados":0}
-,{"fecha":"2026-07-14","fletero":"David","zona":"","entregas_asignadas":0,"entregas_realizadas":0,"cartones_a_retornar":71,"cartones_retornados":31}
+,{"fecha":"2026-07-14","fletero":"David Alvarez","zona":"","entregas_asignadas":0,"entregas_realizadas":0,"cartones_a_retornar":71,"cartones_retornados":31}
 ,{"fecha":"2026-07-14","fletero":"Gabriel Flores","zona":"","entregas_asignadas":1,"entregas_realizadas":1,"cartones_a_retornar":59,"cartones_retornados":27}
 ,{"fecha":"2026-07-14","fletero":"Javier Sotelo","zona":"","entregas_asignadas":1,"entregas_realizadas":1,"cartones_a_retornar":64,"cartones_retornados":29}
 ,{"fecha":"2026-07-14","fletero":"Jonathan Pinazo","zona":"","entregas_asignadas":1,"entregas_realizadas":1,"cartones_a_retornar":0,"cartones_retornados":0}
