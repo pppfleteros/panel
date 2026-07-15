@@ -316,6 +316,7 @@
       celdas.push('<div class="avg"><span class="avg__k">Clientes entregados · ' + mesNombre + '</span><b>' + st.cliEnt + ' / ' + st.cliSac + '</b></div>');
       celdas.push('<div class="avg"><span class="avg__k">Boletas entregadas · ' + mesNombre + '</span><b>' + st.compEnt + ' / ' + st.compSac + '</b></div>');
       celdas.push('<div class="avg"><span class="avg__k">Items rechazados · ' + mesNombre + ' <small>(productos)</small></span><b class="ambar">' + (st.itemsRech || 0) + '</b></div>');
+      celdas.push('<div class="avg"><span class="avg__k">Plata rechazada · ' + mesNombre + '</span><b class="rojo">' + fmtPlata(st.impRech || 0) + '</b></div>');
     }
     celdas.push('<div class="avg"><span class="avg__k">Cartones de ' + mesNombre + '</span><b>' + promMes.cartones + ' / ' + promMes.cartonesTot + '</b></div>');
     var proms2 = el("div", "avgs reveal");
@@ -565,6 +566,16 @@
     if (!an) {
       cont.appendChild(el("p", "muted", "Todavía no hay datos de análisis (falta cargar el reporte de ventas)."));
       return cont;
+    }
+
+    // Plata rechazada del mes (los montos facturados siguen privados)
+    if (an.importe) {
+      var stat = el("div", "chart reveal");
+      stat.innerHTML =
+        '<h2 class="chart__title">💸 Plata rechazada en ' + mesNombre + '</h2>' +
+        '<div class="bigmoney">' + fmtPlata(an.importe) + '</div>' +
+        '<p class="chart__note">Suma de todas las notas de crédito por rechazo del mes, productos sueltos incluidos (no los canjes).</p>';
+      cont.appendChild(stat);
     }
 
     function tarjeta(titulo, items) {
