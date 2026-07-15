@@ -315,6 +315,7 @@
       celdas.push('<div class="avg"><span class="avg__k">Boletas rechazadas completas</span><b class="ambar">' + st.recBol + '</b></div>');
       celdas.push('<div class="avg"><span class="avg__k">Clientes entregados · ' + mesNombre + '</span><b>' + st.cliEnt + ' / ' + st.cliSac + '</b></div>');
       celdas.push('<div class="avg"><span class="avg__k">Boletas entregadas · ' + mesNombre + '</span><b>' + st.compEnt + ' / ' + st.compSac + '</b></div>');
+      celdas.push('<div class="avg"><span class="avg__k">Items rechazados · ' + mesNombre + ' <small>(productos)</small></span><b class="ambar">' + (st.itemsRech || 0) + '</b></div>');
     }
     celdas.push('<div class="avg"><span class="avg__k">Cartones de ' + mesNombre + '</span><b>' + promMes.cartones + ' / ' + promMes.cartonesTot + '</b></div>');
     var proms2 = el("div", "avgs reveal");
@@ -338,9 +339,9 @@
       var rows = mios.map(function (m) {
         var p = Math.round(100 * m.cantidad / total);
         var w = Math.max(4, Math.round(100 * m.cantidad / max));
-        return '<div class="chart__row" title="' + m.motivo.replace(/"/g, "&quot;") + ' · ' + m.cantidad + ' rechazos (' + p + '%)">' +
+        return '<div class="chart__row" title="' + m.motivo.replace(/"/g, "&quot;") + ' · ' + p + '% de sus boletas rechazadas">' +
           '<div class="chart__top"><span class="chart__label">' + m.motivo + '</span>' +
-          '<b class="chart__val">' + p + '% <span class="chart__cnt">(' + m.cantidad + ')</span></b></div>' +
+          '<b class="chart__val">' + p + '%</b></div>' +
           '<i class="chart__track"><i class="rank__fill rank__fill--low" style="width:2%" data-w="' + w + '"></i></i>' +
         '</div>';
       }).join("");
