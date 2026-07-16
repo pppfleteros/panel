@@ -26,7 +26,7 @@ $DIAS_PUBLICAR = 14    # fechas con datos que se publican en la web
 # Filas que no van a la web (no-fleteros y excluidos a pedido de Lucas)
 $EXCLUIR = @("SIN CHOFER", "RETIRA EN DEPOSITO",
              "LEANDRO BENITEZ", "MARCELO VACA", "GONZALO CALO", "EZEQUIEL HEREDIA",
-             "CARLOS GUILLERMO ESCUDERO", "GABRIEL MAYMO")
+             "CARLOS GUILLERMO ESCUDERO", "GABRIEL MAYMO", "SEMI JORGE")
 
 function Log($msg) {
   Write-Output ((Get-Date -Format "yyyy-MM-dd HH:mm:ss") + "  " + $msg)
@@ -356,6 +356,7 @@ try {
     Start-Sleep -Seconds 1
   }
   $entregas = @{}   # clave "fecha|CHOFER" -> @{asig; real; itemsRech}
+  $repartosCho = @{} # CHOFER -> cantidad de repartos hechos en el mes (tarjeta del detalle)
   foreach ($rp in $repartosMes) {
     $crR = [string]$rp.codigo
     if (-not $rp.fecha) { continue }
@@ -379,6 +380,8 @@ try {
       }
     }
     if ($asigR -le 0) { continue }
+    if (-not $repartosCho[$choR]) { $repartosCho[$choR] = 0 }
+    $repartosCho[$choR]++
     $claveR = "$fechaR|$choR"
     if (-not $entregas[$claveR]) { $entregas[$claveR] = @{ asig = 0; real = 0; itemsRech = 0 } }
     $entregas[$claveR].asig += $asigR
@@ -680,8 +683,10 @@ $statsJson = foreach ($cho in ($statsChofer.Keys | Sort-Object)) {
   $pSuel = 0; if ($s.prodSuel) { $pSuel = $s.prodSuel }
   $iRech = 0; if ($itemsRechMes[$cho]) { $iRech = $itemsRechMes[$cho] }
   $iImpR = 0; if ($impRechCho.ContainsKey("$mesFE|$cho")) { $iImpR = [math]::Round($impRechCho["$mesFE|$cho"]) }
+  $nRep = 0; if ($repartosCho[$cho]) { $nRep = $repartosCho[$cho] }
   '"' + (NombreMostrar $cho) + '":{"recTot":' + $s.recTot + ',"recBol":' + $s.recBol +
     ',"prodSuel":' + $pSuel + ',"itemsRech":' + $iRech + ',"impRech":' + $iImpR +
+    ',"repartos":' + $nRep +
     ',"cliSac":' + $s.cliSac + ',"cliEnt":' + ($s.cliSac - $s.recTot) +
     ',"compSac":' + $s.compSac + ',"compEnt":' + ($s.compSac - $s.compRech) + '}'
 }
