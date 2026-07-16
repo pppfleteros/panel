@@ -32,12 +32,6 @@
                                                               "compSac":  519,
                                                               "recBol":  14
                                                           },
-                                     "JULIO MORAN":  {
-                                                         "recTot":  9,
-                                                         "cliSac":  351,
-                                                         "compSac":  517,
-                                                         "recBol":  23
-                                                     },
                                      "CARLOS CRESPO":  {
                                                            "recTot":  3,
                                                            "cliSac":  319,
@@ -128,12 +122,12 @@
                                                           "compSac":  578,
                                                           "recBol":  15
                                                       },
-                                     "SEMI JORGE":  {
-                                                        "recTot":  0,
-                                                        "cliSac":  1,
-                                                        "compSac":  1,
-                                                        "recBol":  0
-                                                    },
+                                     "JULIO MORAN":  {
+                                                         "recTot":  9,
+                                                         "cliSac":  351,
+                                                         "compSac":  517,
+                                                         "recBol":  23
+                                                     },
                                      "RUBEN SALVATIERRA":  {
                                                                "recTot":  6,
                                                                "cliSac":  148,
@@ -148,8 +142,8 @@
                                                        }
                                  },
                     "cartonesVueltos":  6167,
-                    "entregasAsignadas":  12688,
-                    "entregasRealizadas":  11917,
+                    "entregasAsignadas":  12687,
+                    "entregasRealizadas":  11916,
                     "cartonesSacados":  13553,
                     "actualizado":  "2026-07-16"
                 }
