@@ -1,0 +1,31 @@
+# Mapeo de nombres: planilla de carton -> nombre completo de Gescom
+# El robot empareja solo (nombre + inicial del apellido). Si en el log aparece
+# "AVISO nombres sin mapear", agrega una linea aca con el formato:
+#
+#   nombre corto = NOMBRE COMPLETO
+#
+# Ejemplo:
+#   Carlos E = CARLOS ESPINOZA
+
+Lucas R = LUCAS MATIAS RODRIGUEZ
+
+# Nombres mal escritos en la planilla de carton (14/07)
+Hector = HECTOR ROLDAN
+joni P = JONATHAN PINAZO
+Maxi = MAXIMILIANO PINAZO
+David = DAVID ALVAREZ
+
+# Nombres mal escritos en la planilla de carton (13/07)
+julio = JULIO MORAN
+cristian = CRISTIAN CARRIZO
+jonatan p = JONATHAN PINAZO
+Javier = JAVIER SOTELO
+Ariel = ARIEL RIVEROS
+Nicolas = NICOLAS OVIEDO
+Alan = ALAN PEREZ
+
+# Excluidos de la web (mapearlos a su nombre completo hace que el filtro los saque)
+Ezequiel H = EZEQUIEL HEREDIA
+Marcelo V = MARCELO VACA
+Gonzalo C = GONZALO CALO
+Leandro B = LEANDRO BENITEZ
