@@ -1,0 +1,51 @@
+# Robot del Panel de Fleteros PPP en la nube.
+# Corre todos los dias a las 14:00 de Argentina (17:00 UTC) y tambien se puede
+# disparar a mano desde la pestania Actions -> "Actualizar panel" -> Run workflow.
+name: Actualizar panel
+
+on:
+  schedule:
+    - cron: "0 17 * * *"   # 14:00 hora argentina (Argentina no tiene horario de verano)
+  workflow_dispatch:
+
+concurrency:
+  group: actualizar-panel
+  cancel-in-progress: false
+
+jobs:
+  actualizar:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    permissions:
+      contents: write
+    steps:
+      - name: Bajar el repositorio
+        uses: actions/checkout@v4
+
+      - name: Poner hora argentina
+        shell: powershell
+        run: tzutil /s "Argentina Standard Time"
+
+      - name: Correr el robot
+        shell: powershell
+        env:
+          GESCOM_REALM: ${{ secrets.GESCOM_REALM }}
+          GESCOM_USUARIO: ${{ secrets.GESCOM_USUARIO }}
+          GESCOM_CLAVE: ${{ secrets.GESCOM_CLAVE }}
+          CARTON_URL: ${{ secrets.CARTON_URL }}
+        run: .\robot-nube.ps1
+
+      - name: Publicar (commit de data.js e historial)
+        shell: powershell
+        run: |
+          git config user.name "robot-ppp"
+          git config user.email "robot-ppp@users.noreply.github.com"
+          git add data.js historial-meses.json
+          git diff --cached --quiet
+          if ($LASTEXITCODE -ne 0) {
+            git commit -m ("Datos del " + (Get-Date -Format "dd/MM/yyyy HH:mm"))
+            git push
+            Write-Output "Publicado en GitHub Pages"
+          } else {
+            Write-Output "Datos sin cambios: no hace falta publicar"
+          }
