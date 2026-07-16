@@ -394,20 +394,18 @@
     cont.appendChild(res);
     cont._rings = [aE.wrap, aR.wrap];
 
-    // Días hábiles (lunes a viernes, sin feriados) del mes, con UN DÍA DE ATRASO:
-    // el último día con datos no cuenta porque sus viajes todavía no están cerrados.
-    // Los feriados vienen de la API de Gescom en data.js (window.__PPP_DATA__.feriados).
+    // Días hábiles (lunes a viernes) del mes, con UN DÍA DE ATRASO: el último día
+    // con datos no cuenta porque sus viajes todavía no están cerrados.
+    // Los feriados NO se descuentan (regla de la empresa: el feriado que no se
+    // trabaja se compensa repartiendo el sábado; data.js trae la lista igual).
     var ultimaFecha = fechasTodas.length ? fechasTodas[fechasTodas.length - 1] : "";
-    var feriados = {};
-    ((window.__PPP_DATA__ && window.__PPP_DATA__.feriados) || []).forEach(function (f) { feriados[f] = 1; });
     var habiles = 0;
     if (mesPrefijo && ultimaFecha) {
       var aa = parseInt(mesPrefijo.slice(0, 4), 10), mm = parseInt(mesPrefijo.slice(5), 10);
       var ultDia = parseInt(ultimaFecha.slice(8), 10);
       for (var dd = 1; dd < ultDia; dd++) {   // < : excluye el día en curso
         var dow = new Date(aa, mm - 1, dd).getDay();
-        var fISO = mesPrefijo + "-" + (dd < 10 ? "0" + dd : "" + dd);
-        if (dow >= 1 && dow <= 5 && !feriados[fISO]) habiles++;
+        if (dow >= 1 && dow <= 5) habiles++;
       }
     }
 
