@@ -106,7 +106,8 @@ $impRechCho = @{}
 $feriadosWeb = @()
 
 # --- Conexion: credenciales por variables de entorno (secretos del repo) ---
-$credApi = @{ REALM = $env:GESCOM_REALM; USUARIO = $env:GESCOM_USUARIO; CLAVE = $env:GESCOM_CLAVE }
+# Trim: un salto de linea colado en un secreto rompe la URL del login (500)
+$credApi = @{ REALM = ([string]$env:GESCOM_REALM).Trim(); USUARIO = ([string]$env:GESCOM_USUARIO).Trim(); CLAVE = ([string]$env:GESCOM_CLAVE).Trim() }
 if (-not $credApi.REALM) {
   # Modo prueba local: leerlas del archivo de siempre
   $archCred = "C:\Users\luqaa\Documents\PPP-Fleteros\robot\gescom-api.txt"
