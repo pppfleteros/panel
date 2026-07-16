@@ -311,6 +311,9 @@
     var st = ((window.__PPP_DATA__ && window.__PPP_DATA__.estadisticasFletero) || {})[nombre];
     var celdas = [];
     if (st) {
+      if (st.repartos) {
+        celdas.push('<div class="avg"><span class="avg__k">Repartos hechos · ' + mesNombre + '</span><b>' + st.repartos + '</b></div>');
+      }
       celdas.push('<div class="avg"><span class="avg__k">Clientes rechazados completos</span><b class="rojo">' + st.recTot + '</b></div>');
       celdas.push('<div class="avg"><span class="avg__k">Boletas rechazadas completas</span><b class="ambar">' + st.recBol + '</b></div>');
       celdas.push('<div class="avg"><span class="avg__k">Clientes entregados · ' + mesNombre + '</span><b>' + st.cliEnt + ' / ' + st.cliSac + '</b></div>');
