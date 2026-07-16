@@ -1,6 +1,6 @@
 {
     "2026-07":  {
-                    "importeRechazado":  42532195,
+                    "importeRechazado":  42635959,
                     "choferes":  {
                                      "NICOLAS OVIEDO":  {
                                                             "recTot":  11,
@@ -108,7 +108,7 @@
                                                                 "recTot":  21,
                                                                 "cliSac":  222,
                                                                 "compSac":  383,
-                                                                "recBol":  41
+                                                                "recBol":  42
                                                             },
                                      "CLAUDIO PONCE":  {
                                                            "recTot":  3,
@@ -149,7 +149,7 @@
                                  },
                     "cartonesVueltos":  6167,
                     "entregasAsignadas":  12688,
-                    "entregasRealizadas":  11920,
+                    "entregasRealizadas":  11917,
                     "cartonesSacados":  13553,
                     "actualizado":  "2026-07-16"
                 }
