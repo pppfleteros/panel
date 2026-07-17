@@ -416,12 +416,16 @@
     var filas = nombres.map(function (n) {
       var regsMes = delMes(datos.porFletero[n].regs);
       var p = promedioPeriodo(regsMes);
-      // Asistencia: días con reparto (sin contar el día en curso) vs días hábiles cerrados
-      var diasTrab = {};
+      // Asistencia: REPARTOS HECHOS (sin contar el día en curso) vs días hábiles
+      // cerrados, con tope 100% (un doble reparto compensa un día no trabajado,
+      // pero no suma más de 100). Si el data.js es viejo y no trae "repartos",
+      // se cuenta 1 por día con entregas, como antes.
+      var trab = 0;
       regsMes.forEach(function (r) {
-        if (r.entregas_asignadas > 0 && r.fecha !== ultimaFecha) diasTrab[r.fecha] = 1;
+        if (r.fecha === ultimaFecha) return;
+        if (r.repartos) trab += r.repartos;
+        else if (r.entregas_asignadas > 0) trab += 1;
       });
-      var trab = Object.keys(diasTrab).length;
       var asist = habiles > 0 ? Math.min(100, Math.round(100 * trab / habiles)) : null;
       return { nombre: n, zona: datos.porFletero[n].zona, efE: pct(p.efE), efR: pct(p.efR), asist: asist, diasTrab: trab };
     });
@@ -472,7 +476,7 @@
           asistHTML = f.asist == null
             ? '<span class="rank__num rank__prize--none">—</span>'
             : '<span class="rank__num"><span class="chip ' + (f.asist >= ASIST_MIN ? "chip--ok" : "chip--low") + '"' +
-              ' title="' + f.diasTrab + ' de ' + habiles + ' días hábiles">' + f.asist + '%</span></span>';
+              ' title="' + f.diasTrab + ' repartos en ' + habiles + ' días hábiles">' + f.asist + '%</span></span>';
         }
         return '<button class="rank__row" data-fletero="' + f.nombre.replace(/"/g, "&quot;") + '">' +
           '<span class="rank__pos">' + medal + '</span>' +
