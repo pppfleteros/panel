@@ -383,7 +383,8 @@ try {
     if (-not $repartosCho[$choR]) { $repartosCho[$choR] = 0 }
     $repartosCho[$choR]++
     $claveR = "$fechaR|$choR"
-    if (-not $entregas[$claveR]) { $entregas[$claveR] = @{ asig = 0; real = 0; itemsRech = 0 } }
+    if (-not $entregas[$claveR]) { $entregas[$claveR] = @{ asig = 0; real = 0; itemsRech = 0; rep = 0 } }
+    $entregas[$claveR].rep += 1
     $entregas[$claveR].asig += $asigR
     $entregas[$claveR].real += [math]::Max(0, $asigR - $rechR)
     $entregas[$claveR].itemsRech += [int][math]::Round($itemsR)
@@ -636,13 +637,13 @@ foreach ($clave in $claves) {
   $p = $clave.Split("|"); $fecha = $p[0]; $chofer = $p[1]
   if ($chofer -in $EXCLUIR) { continue }
   $e = $entregas[$clave]; $c = $cartones[$clave]
-  $ea = 0; $er = 0; $ca = 0; $cr = 0
-  if ($e) { $ea = $e.asig; $er = $e.real }
+  $ea = 0; $er = 0; $ca = 0; $cr = 0; $nrep = 0
+  if ($e) { $ea = $e.asig; $er = $e.real; if ($e.rep) { $nrep = $e.rep } }
   if ($c) { $ca = $c.sal; $cr = $c.vue }
   # Nombre para mostrar: "Carlos Crespo" en vez de "CARLOS CRESPO"
   $mostrar = (($chofer.ToLower() -split "\s+") | ForEach-Object { if ($_.Length -gt 0) { $_.Substring(0,1).ToUpper() + $_.Substring(1) } }) -join " "
   $coma = ","; if ($primero) { $coma = " "; $primero = $false }
-  $json = '{"fecha":"' + $fecha + '","fletero":"' + $mostrar + '","zona":"","entregas_asignadas":' + $ea + ',"entregas_realizadas":' + $er + ',"cartones_a_retornar":' + $ca + ',"cartones_retornados":' + $cr + '}'
+  $json = '{"fecha":"' + $fecha + '","fletero":"' + $mostrar + '","zona":"","repartos":' + $nrep + ',"entregas_asignadas":' + $ea + ',"entregas_realizadas":' + $er + ',"cartones_a_retornar":' + $ca + ',"cartones_retornados":' + $cr + '}'
   [void]$sb.AppendLine($coma + $json)
 }
 [void]$sb.AppendLine("] };")
