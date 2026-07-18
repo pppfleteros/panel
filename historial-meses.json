@@ -1,6 +1,6 @@
 {
     "2026-07":  {
-                    "importeRechazado":  46599007,
+                    "importeRechazado":  48073644,
                     "choferes":  {
                                      "NICOLAS OVIEDO":  {
                                                             "recTot":  11,
@@ -75,10 +75,10 @@
                                                          "recBol":  36
                                                      },
                                      "JONATHAN PINAZO":  {
-                                                             "recTot":  13,
+                                                             "recTot":  18,
                                                              "cliSac":  232,
                                                              "compSac":  414,
-                                                             "recBol":  32
+                                                             "recBol":  49
                                                          },
                                      "MATIAS AMAYA":  {
                                                           "recTot":  10,
@@ -143,8 +143,8 @@
                                  },
                     "cartonesVueltos":  6618,
                     "entregasAsignadas":  13685,
-                    "entregasRealizadas":  12837,
+                    "entregasRealizadas":  12819,
                     "cartonesSacados":  14556,
-                    "actualizado":  "2026-07-17"
+                    "actualizado":  "2026-07-18"
                 }
 }
