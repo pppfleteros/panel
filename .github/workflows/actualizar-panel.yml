@@ -1,11 +1,14 @@
 # Robot del Panel de Fleteros PPP en la nube.
-# Corre todos los dias a las 14:00 de Argentina (17:00 UTC) y tambien se puede
-# disparar a mano desde la pestania Actions -> "Actualizar panel" -> Run workflow.
+# Corre de lunes a viernes a las 7:08 y a las 14:08, hora argentina,
+# y tambien se puede disparar a mano desde Actions -> "Actualizar panel" -> Run workflow.
+# (Argentina es UTC-3 y no tiene horario de verano. Los minutos 08 evitan el
+#  arranque de la hora en punto, que GitHub suele demorar por congestion.)
 name: Actualizar panel
 
 on:
   schedule:
-    - cron: "0 17 * * *"   # 14:00 hora argentina (Argentina no tiene horario de verano)
+    - cron: "8 10 * * 1-5"   # 7:08 hora argentina, lunes a viernes
+    - cron: "8 17 * * 1-5"   # 14:08 hora argentina, lunes a viernes
   workflow_dispatch:
 
 concurrency:
