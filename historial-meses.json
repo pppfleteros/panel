@@ -1,6 +1,6 @@
 {
     "2026-07":  {
-                    "importeRechazado":  66001796,
+                    "importeRechazado":  66192404,
                     "choferes":  {
                                      "NICOLAS OVIEDO":  {
                                                             "recTot":  19,
@@ -16,14 +16,14 @@
                                                         },
                                      "ALAN PEREZ":  {
                                                         "recTot":  14,
-                                                        "cliSac":  445,
-                                                        "compSac":  668,
+                                                        "cliSac":  446,
+                                                        "compSac":  669,
                                                         "recBol":  23
                                                     },
                                      "LUCAS MATIAS RODRIGUEZ":  {
                                                                     "recTot":  30,
-                                                                    "cliSac":  566,
-                                                                    "compSac":  902,
+                                                                    "cliSac":  567,
+                                                                    "compSac":  903,
                                                                     "recBol":  54
                                                                 },
                                      "PABLO MOYANO":  {
@@ -58,14 +58,14 @@
                                                       },
                                      "HECTOR ROLDAN":  {
                                                            "recTot":  17,
-                                                           "cliSac":  469,
-                                                           "compSac":  811,
+                                                           "cliSac":  471,
+                                                           "compSac":  815,
                                                            "recBol":  39
                                                        },
                                      "LEANDRO SANCHEZ":  {
                                                              "recTot":  13,
-                                                             "cliSac":  476,
-                                                             "compSac":  804,
+                                                             "cliSac":  477,
+                                                             "compSac":  805,
                                                              "recBol":  39
                                                          },
                                      "GUILLERMO GUZMAN":  {
@@ -76,8 +76,8 @@
                                                           },
                                      "LUCAS CALVO":  {
                                                          "recTot":  25,
-                                                         "cliSac":  371,
-                                                         "compSac":  643,
+                                                         "cliSac":  372,
+                                                         "compSac":  644,
                                                          "recBol":  49
                                                      },
                                      "JONATHAN PINAZO":  {
@@ -118,32 +118,32 @@
                                                        },
                                      "DANIEL MENDOZA":  {
                                                             "recTot":  12,
-                                                            "cliSac":  458,
-                                                            "compSac":  711,
+                                                            "cliSac":  460,
+                                                            "compSac":  713,
                                                             "recBol":  27
                                                         },
                                      "JULIO MORAN":  {
                                                          "recTot":  15,
-                                                         "cliSac":  535,
-                                                         "compSac":  798,
+                                                         "cliSac":  534,
+                                                         "compSac":  797,
                                                          "recBol":  38
                                                      },
                                      "RUBEN SALVATIERRA":  {
                                                                "recTot":  13,
-                                                               "cliSac":  253,
-                                                               "compSac":  483,
+                                                               "cliSac":  251,
+                                                               "compSac":  479,
                                                                "recBol":  26
                                                            },
                                      "DAVID ALVAREZ":  {
                                                            "recTot":  17,
-                                                           "cliSac":  530,
-                                                           "compSac":  922,
+                                                           "cliSac":  531,
+                                                           "compSac":  924,
                                                            "recBol":  40
                                                        }
                                  },
                     "cartonesVueltos":  9138,
-                    "entregasAsignadas":  18404,
-                    "entregasRealizadas":  17157,
+                    "entregasAsignadas":  18400,
+                    "entregasRealizadas":  17152,
                     "cartonesSacados":  19136,
                     "actualizado":  "2026-07-24"
                 }
