@@ -1,84 +1,84 @@
 {
     "2026-07":  {
-                    "importeRechazado":  62206129,
+                    "importeRechazado":  66001796,
                     "choferes":  {
                                      "NICOLAS OVIEDO":  {
-                                                            "recTot":  17,
-                                                            "cliSac":  501,
-                                                            "compSac":  943,
-                                                            "recBol":  33
+                                                            "recTot":  19,
+                                                            "cliSac":  524,
+                                                            "compSac":  1000,
+                                                            "recBol":  38
                                                         },
                                      "GABRIEL FLORES":  {
-                                                            "recTot":  29,
-                                                            "cliSac":  419,
-                                                            "compSac":  716,
-                                                            "recBol":  50
+                                                            "recTot":  32,
+                                                            "cliSac":  453,
+                                                            "compSac":  768,
+                                                            "recBol":  53
                                                         },
                                      "ALAN PEREZ":  {
-                                                        "recTot":  13,
-                                                        "cliSac":  414,
-                                                        "compSac":  618,
-                                                        "recBol":  20
+                                                        "recTot":  14,
+                                                        "cliSac":  445,
+                                                        "compSac":  668,
+                                                        "recBol":  23
                                                     },
                                      "LUCAS MATIAS RODRIGUEZ":  {
-                                                                    "recTot":  27,
-                                                                    "cliSac":  534,
-                                                                    "compSac":  854,
-                                                                    "recBol":  49
+                                                                    "recTot":  30,
+                                                                    "cliSac":  566,
+                                                                    "compSac":  902,
+                                                                    "recBol":  54
                                                                 },
                                      "PABLO MOYANO":  {
                                                           "recTot":  15,
-                                                          "cliSac":  443,
-                                                          "compSac":  730,
+                                                          "cliSac":  470,
+                                                          "compSac":  770,
                                                           "recBol":  27
                                                       },
                                      "CRISTIAN CARRIZO":  {
-                                                              "recTot":  23,
-                                                              "cliSac":  518,
-                                                              "compSac":  818,
-                                                              "recBol":  48
+                                                              "recTot":  25,
+                                                              "cliSac":  551,
+                                                              "compSac":  886,
+                                                              "recBol":  53
                                                           },
                                      "CARLOS CRESPO":  {
                                                            "recTot":  5,
-                                                           "cliSac":  467,
-                                                           "compSac":  705,
-                                                           "recBol":  10
+                                                           "cliSac":  499,
+                                                           "compSac":  750,
+                                                           "recBol":  12
                                                        },
                                      "LUCAS GUIERING":  {
-                                                            "recTot":  26,
-                                                            "cliSac":  342,
-                                                            "compSac":  614,
-                                                            "recBol":  60
+                                                            "recTot":  32,
+                                                            "cliSac":  370,
+                                                            "compSac":  658,
+                                                            "recBol":  75
                                                         },
                                      "RODRIGO CALO":  {
                                                           "recTot":  14,
-                                                          "cliSac":  431,
-                                                          "compSac":  727,
+                                                          "cliSac":  404,
+                                                          "compSac":  686,
                                                           "recBol":  34
                                                       },
                                      "HECTOR ROLDAN":  {
-                                                           "recTot":  16,
-                                                           "cliSac":  439,
-                                                           "compSac":  764,
-                                                           "recBol":  37
+                                                           "recTot":  17,
+                                                           "cliSac":  469,
+                                                           "compSac":  811,
+                                                           "recBol":  39
                                                        },
                                      "LEANDRO SANCHEZ":  {
-                                                             "recTot":  12,
-                                                             "cliSac":  441,
-                                                             "compSac":  738,
-                                                             "recBol":  38
+                                                             "recTot":  13,
+                                                             "cliSac":  476,
+                                                             "compSac":  804,
+                                                             "recBol":  39
                                                          },
                                      "GUILLERMO GUZMAN":  {
-                                                              "recTot":  8,
-                                                              "cliSac":  332,
-                                                              "compSac":  614,
-                                                              "recBol":  16
+                                                              "recTot":  10,
+                                                              "cliSac":  353,
+                                                              "compSac":  656,
+                                                              "recBol":  19
                                                           },
                                      "LUCAS CALVO":  {
-                                                         "recTot":  22,
-                                                         "cliSac":  336,
-                                                         "compSac":  589,
-                                                         "recBol":  41
+                                                         "recTot":  25,
+                                                         "cliSac":  371,
+                                                         "compSac":  643,
+                                                         "recBol":  49
                                                      },
                                      "JONATHAN PINAZO":  {
                                                              "recTot":  18,
@@ -88,21 +88,21 @@
                                                          },
                                      "MATIAS AMAYA":  {
                                                           "recTot":  12,
-                                                          "cliSac":  490,
-                                                          "compSac":  724,
+                                                          "cliSac":  516,
+                                                          "compSac":  773,
                                                           "recBol":  27
                                                       },
                                      "ARIEL RIVEROS":  {
-                                                           "recTot":  21,
-                                                           "cliSac":  512,
-                                                           "compSac":  786,
-                                                           "recBol":  36
+                                                           "recTot":  22,
+                                                           "cliSac":  547,
+                                                           "compSac":  838,
+                                                           "recBol":  38
                                                        },
                                      "JAVIER SOTELO":  {
-                                                           "recTot":  11,
-                                                           "cliSac":  543,
-                                                           "compSac":  969,
-                                                           "recBol":  27
+                                                           "recTot":  12,
+                                                           "cliSac":  577,
+                                                           "compSac":  1020,
+                                                           "recBol":  28
                                                        },
                                      "MAXIMILIANO PINAZO":  {
                                                                 "recTot":  25,
@@ -112,39 +112,39 @@
                                                             },
                                      "CLAUDIO PONCE":  {
                                                            "recTot":  8,
-                                                           "cliSac":  228,
-                                                           "compSac":  469,
-                                                           "recBol":  24
+                                                           "cliSac":  266,
+                                                           "compSac":  539,
+                                                           "recBol":  25
                                                        },
                                      "DANIEL MENDOZA":  {
                                                             "recTot":  12,
-                                                            "cliSac":  434,
-                                                            "compSac":  675,
+                                                            "cliSac":  458,
+                                                            "compSac":  711,
                                                             "recBol":  27
                                                         },
                                      "JULIO MORAN":  {
-                                                         "recTot":  14,
-                                                         "cliSac":  506,
-                                                         "compSac":  752,
-                                                         "recBol":  34
+                                                         "recTot":  15,
+                                                         "cliSac":  535,
+                                                         "compSac":  798,
+                                                         "recBol":  38
                                                      },
                                      "RUBEN SALVATIERRA":  {
                                                                "recTot":  13,
-                                                               "cliSac":  233,
-                                                               "compSac":  437,
+                                                               "cliSac":  253,
+                                                               "compSac":  483,
                                                                "recBol":  26
                                                            },
                                      "DAVID ALVAREZ":  {
-                                                           "recTot":  16,
-                                                           "cliSac":  503,
-                                                           "compSac":  875,
-                                                           "recBol":  36
+                                                           "recTot":  17,
+                                                           "cliSac":  530,
+                                                           "compSac":  922,
+                                                           "recBol":  40
                                                        }
                                  },
-                    "cartonesVueltos":  7891,
-                    "entregasAsignadas":  17380,
-                    "entregasRealizadas":  16217,
-                    "cartonesSacados":  16868,
-                    "actualizado":  "2026-07-23"
+                    "cartonesVueltos":  9138,
+                    "entregasAsignadas":  18404,
+                    "entregasRealizadas":  17157,
+                    "cartonesSacados":  19136,
+                    "actualizado":  "2026-07-24"
                 }
 }
