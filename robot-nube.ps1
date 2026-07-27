@@ -29,9 +29,7 @@ $EXCLUIR = @("SIN CHOFER", "RETIRA EN DEPOSITO",
              "CARLOS GUILLERMO ESCUDERO", "GABRIEL MAYMO", "SEMI JORGE")
 
 function Log($msg) {
-  # OJO: [Console] y no Write-Output — dentro de una funcion, Write-Output se
-  # mezcla con el valor de retorno y contamina los datos (bug ya sufrido).
-  [Console]::Out.WriteLine((Get-Date -Format "yyyy-MM-dd HH:mm:ss") + "  " + $msg)
+  Write-Output ((Get-Date -Format "yyyy-MM-dd HH:mm:ss") + "  " + $msg)
 }
 
 # --- Lector generico de .xlsx (sin Excel) -----------------------------------
@@ -91,6 +89,21 @@ function EsNumero($v) { return ($null -ne $v -and [string]$v -match "^-?\d+(\.\d
 
 # ============================================================================
 Log ("================ INICIO (" + $MODO + ") ================")
+
+# --- Bajar los datos UNA sola vez por dia ---------------------------------
+# Hay varias corridas programadas por dia (respaldos por si GitHub demora o
+# saltea alguna). Para no cargar la API de Gescom de mas, si el panel YA se
+# actualizo hoy y esta es una corrida automatica, salimos sin bajar nada.
+# Las corridas MANUALES (Run workflow) siempre actualizan, para poder forzar.
+$dataActual = Join-Path $RAIZ "data.js"
+if ($env:GITHUB_EVENT_NAME -eq "schedule" -and (Test-Path $dataActual)) {
+  $cabecera = (Get-Content $dataActual -TotalCount 3 -Encoding UTF8) -join "`n"
+  $hoyStr = (Get-Date -Format "yyyy-MM-dd")
+  if ($cabecera -match ("Ultima actualizacion: " + [regex]::Escape($hoyStr))) {
+    Log ("Ya actualizado hoy (" + $hoyStr + "): no hace falta bajar de nuevo. FIN.")
+    exit 0
+  }
+}
 
 # ============================================================================
 # 2b) MOTIVOS, ESTADISTICAS Y ANALISIS DE RECHAZOS desde la API de Gescom
