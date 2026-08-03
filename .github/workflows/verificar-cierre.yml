@@ -1,0 +1,75 @@
+# Verificacion del cierre del MES ANTERIOR — TODOS LOS MESES.
+# El dia 10 de cada mes (con reintentos el 11 y 12 por si GitHub demora) re-baja
+# el mes anterior completo de la API, anclado en la fecha de reparto (cierre de
+# camiones), lo compara contra lo que ya estaba guardado y escribe
+# verificacion-<mes>.md. Actualiza SOLO el historial (no toca el data.js en vivo).
+name: Verificar cierre de mes
+
+on:
+  schedule:
+    - cron: "0 12 10 * *"   # dia 10, 09:00 hora argentina
+    - cron: "0 12 11 * *"   # dia 11 (respaldo si el 10 no disparo)
+    - cron: "0 12 12 * *"   # dia 12 (respaldo)
+  workflow_dispatch:        # y a mano cuando se quiera
+
+concurrency:
+  group: actualizar-panel   # comparte candado con el robot diario (no se pisan)
+  cancel-in-progress: false
+
+jobs:
+  verificar:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    permissions:
+      contents: write
+    steps:
+      - name: Bajar el repositorio
+        uses: actions/checkout@v4
+
+      - name: Saltar si el mes anterior ya se verifico (salvo corrida manual)
+        id: guard
+        shell: powershell
+        run: |
+          $prev = (Get-Date).AddMonths(-1).ToString("yyyy-MM")
+          $rep = "verificacion-$prev.md"
+          $manual = ("${{ github.event_name }}" -eq "workflow_dispatch")
+          if ((Test-Path $rep) -and -not $manual) {
+            Write-Output "Ya existe $rep; salteo."
+            "correr=no" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          } else {
+            Write-Output "Verificando el mes $prev."
+            "correr=si" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          }
+
+      - name: Poner hora argentina
+        if: steps.guard.outputs.correr == 'si'
+        shell: powershell
+        run: tzutil /s "Argentina Standard Time"
+
+      - name: Re-bajar el mes anterior y comparar
+        if: steps.guard.outputs.correr == 'si'
+        shell: powershell
+        env:
+          GESCOM_REALM: ${{ secrets.GESCOM_REALM }}
+          GESCOM_USUARIO: ${{ secrets.GESCOM_USUARIO }}
+          GESCOM_CLAVE: ${{ secrets.GESCOM_CLAVE }}
+          CARTON_URL: ${{ secrets.CARTON_URL }}
+          FORCE_MES: "anterior"
+        run: .\robot-nube.ps1
+
+      - name: Publicar historial e informe (no toca data.js)
+        if: steps.guard.outputs.correr == 'si'
+        shell: powershell
+        run: |
+          git config user.name "robot-ppp"
+          git config user.email "robot-ppp@users.noreply.github.com"
+          git add historial-meses.json
+          git add verificacion-*.md
+          git diff --cached --quiet
+          if ($LASTEXITCODE -ne 0) {
+            git commit -m "Verificacion del cierre de mes"
+            git push
+            Write-Output "Verificacion publicada"
+          } else {
+            Write-Output "Sin cambios que publicar"
+          }
