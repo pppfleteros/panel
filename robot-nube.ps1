@@ -757,6 +757,11 @@ if (Test-Path $histFile) {
   } catch { Log "AVISO: no pude leer historial-meses.json, se regenera" }
 }
 function NumH($v) { if ($null -eq $v) { return 0 } else { return $v } }
+# En modo verificacion (FORCE_MES) guardamos el registro VIEJO del mes forzado
+# ANTES de recalcularlo, para comparar despues (seccion 3b) y ver si aparecieron
+# modificaciones tardias (notas cargadas despues del cierre).
+$verifMesViejo = $null
+if ($env:FORCE_MES -match '^\d{4}-\d{2}$') { $verifMesViejo = $hist[$env:FORCE_MES] }
 # El mes anterior es el mes CALENDARIO anterior a hoy (no el del ultimo dato):
 # asi la tarjeta celebra el mes recien cerrado aunque el mes nuevo todavia no
 # tenga entregas cargadas. Con FORCE_MES no importa (no usamos su data.js).
@@ -860,6 +865,79 @@ $hist[$mesActual] = @{
 }
 [System.IO.File]::WriteAllText($histFile, ($hist | ConvertTo-Json -Depth 6), $utf8)
 Log ("Historial mensual actualizado (" + $mesActual + "; " + $flAcum.Count + " fleteros, premios `$" + $premTot + "; meses: " + $hist.Count + ")")
+
+# ============================================================================
+# 3c) MODO VERIFICACION (FORCE_MES): comparar el mes recalculado contra su
+#     version anterior y escribir un informe en criollo (verificacion-mes.md).
+#     Sirve para corroborar que ya entraron todas las modificaciones tardias.
+# ============================================================================
+if ($env:FORCE_MES -match '^\d{4}-\d{2}$') {
+  $vn = $hist[$mesActual]   # nuevo (recien calculado)
+  $vv = $verifMesViejo      # viejo (antes de recalcular; puede ser $null)
+  function Fnum($x) { if ($null -eq $x) { return 0 } else { return [long]$x } }
+  $lineas = New-Object System.Collections.ArrayList
+  [void]$lineas.Add("# Verificacion del cierre de " + $mesActual)
+  [void]$lineas.Add("")
+  [void]$lineas.Add("Recalculado el " + (Get-Date -Format "yyyy-MM-dd HH:mm") + " (hora argentina), anclado en la fecha de reparto (cierre de camiones).")
+  [void]$lineas.Add("")
+  if (-not $vv) {
+    [void]$lineas.Add("No habia una version anterior guardada para comparar; se dejaron los numeros actuales como definitivos.")
+  } else {
+    $cambios = New-Object System.Collections.ArrayList
+    $campos = @(
+      @("Efectividad de entrega", "efGeneral", "%"),
+      @("Retorno de carton", "cartonGeneral", "%"),
+      @("Repartos", "repartos", ""),
+      @("Boletas entregadas", "boletasEnt", ""),
+      @("Boletas asignadas", "boletasSac", ""),
+      @("Clientes entregados", "clientesEnt", ""),
+      @("Clientes visitados", "clientesSac", ""),
+      @("Plata rechazada", "plataRech", "`$"),
+      @("Premios totales", "premiosTotal", "`$"),
+      @("Fleteros", "fleteros", "")
+    )
+    foreach ($cp in $campos) {
+      $antes = $vv.($cp[1]); $desp = $vn[$cp[1]]
+      if (([string]$antes) -ne ([string]$desp)) {
+        [void]$cambios.Add("- **" + $cp[0] + "**: " + $cp[2] + [string]$antes + " -> " + $cp[2] + [string]$desp)
+      }
+    }
+    # Premios por fletero que cambiaron
+    $premViejo = @{}
+    if ($null -ne $vv.ranking) { foreach ($rk in @($vv.ranking)) { $premViejo[[string]$rk.nombre] = [long](Fnum $rk.premio) } }
+    $premCambio = New-Object System.Collections.ArrayList
+    foreach ($rk in $vn.ranking) {
+      $nom = [string]$rk.nombre
+      $pv = 0; if ($premViejo.ContainsKey($nom)) { $pv = $premViejo[$nom] }
+      if ($pv -ne [long]$rk.premio) {
+        [void]$premCambio.Add("- **" + $nom + "**: premio `$" + $pv + " -> `$" + [long]$rk.premio)
+      }
+    }
+    if ($cambios.Count -eq 0 -and $premCambio.Count -eq 0) {
+      [void]$lineas.Add("## Resultado: SIN CAMBIOS")
+      [void]$lineas.Add("")
+      [void]$lineas.Add("Los numeros de " + $mesActual + " son identicos a los que ya estaban publicados. Ya se habian tomado todas las modificaciones del mes: el cierre esta firme.")
+    } else {
+      [void]$lineas.Add("## Resultado: HUBO CAMBIOS (entraron modificaciones tardias)")
+      [void]$lineas.Add("")
+      if ($cambios.Count -gt 0) {
+        [void]$lineas.Add("### Totales que cambiaron")
+        foreach ($c in $cambios) { [void]$lineas.Add($c) }
+        [void]$lineas.Add("")
+      }
+      if ($premCambio.Count -gt 0) {
+        [void]$lineas.Add("### Premios de fleteros que cambiaron (OJO, es plata)")
+        foreach ($c in $premCambio) { [void]$lineas.Add($c) }
+      } else {
+        [void]$lineas.Add("Ningun premio de fletero cambio.")
+      }
+    }
+  }
+  [void]$lineas.Add("")
+  [void]$lineas.Add("Totales definitivos de " + $mesActual + ": efectividad " + $vn["efGeneral"] + "%, carton " + $vn["cartonGeneral"] + "%, " + $vn["repartos"] + " repartos, premios `$" + $vn["premiosTotal"] + ", " + $vn["fleteros"] + " fleteros.")
+  [System.IO.File]::WriteAllText((Join-Path $RAIZ ("verificacion-" + $mesActual + ".md")), (($lineas -join "`n")), $utf8)
+  Log ("Informe de verificacion escrito: verificacion-" + $mesActual + ".md")
+}
 
 # ============================================================================
 # 4) Publicacion: la hace el workflow de GitHub Actions (commit de data.js
