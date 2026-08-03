@@ -211,7 +211,15 @@ try {
   #     y la preventa se carga hasta ~3 semanas antes de la entrega: margen 21 dias.
   #     OJO: fechahasta es EXCLUSIVA) ---
   $hoyDt = (Get-Date).Date
-  $desdeDt = (Get-Date -Day 1).Date.AddDays(-21)
+  $mesIniDt = (Get-Date -Day 1).Date
+  # Escape hatch: FORCE_MES=yyyy-MM recalcula un mes YA CERRADO (backfill del
+  # historial). Fuerza la ventana a ese mes completo y "hoy" = su ultimo dia.
+  if ($env:FORCE_MES -match '^\d{4}-\d{2}$') {
+    $mesIniDt = [DateTime]($env:FORCE_MES + "-01")
+    $hoyDt = $mesIniDt.AddMonths(1).AddDays(-1).Date
+    Log ("FORZADO mes = " + $env:FORCE_MES + " (hasta " + $hoyDt.ToString("yyyy-MM-dd") + ")")
+  }
+  $desdeDt = $mesIniDt.AddDays(-21)
   $hoyIso = $hoyDt.ToString("yyyy-MM-dd")
 
   $cliDias = @{}      # "cliente|fechaEntrega" -> @{fac = ids de boletas; choV; choN}
@@ -359,7 +367,7 @@ try {
   #   RechazoVentas = notas DEV-RE cargadas EN o DESPUES del dia del reparto
   #   RechazoItems  = unidades x factor de empaque de esas notas
   $repartosMes = New-Object System.Collections.ArrayList
-  $d1r = (Get-Date -Day 1).Date.ToString("yyyy-MM-dd")
+  $d1r = $mesIniDt.ToString("yyyy-MM-dd")
   $d2r = $hoyDt.AddDays(1).ToString("yyyy-MM-dd")   # fechahasta exclusiva -> incluye hoy
   $skipR = 0
   while ($true) {
@@ -736,14 +744,10 @@ $jFleProv = foreach ($cho3 in ($porCho3.Keys | Sort-Object)) {
 }
 [void]$sb.AppendLine("window.__PPP_DATA__.proveedoresPorFletero = {" + ($jFleProv -join ",") + "};")
 
-$utf8 = New-Object System.Text.UTF8Encoding($false)
-[System.IO.File]::WriteAllText((Join-Path $RAIZ "data.js"), $sb.ToString(), $utf8)
-Log "data.js generado"
-
-# ============================================================================
-# 3b) Historial mensual (para comparar mes a mes; aun no se muestra en la web)
-# ============================================================================
-$mesActual = $ultimaFecha.Substring(0, 7)
+# --- Tarjeta de cierre de mes: emitir el MES ANTERIOR (ya cerrado) ----------
+# Sale del historial-meses.json (esquema rico). Se lee ACA porque va dentro de
+# data.js; el historial del mes en curso se (re)escribe mas abajo (seccion 3b).
+$mesActual = $mesFE; if (-not $mesActual) { $mesActual = (Get-Date -Format "yyyy-MM") }
 $histFile = Join-Path $RAIZ "historial-meses.json"
 $hist = @{}
 if (Test-Path $histFile) {
@@ -752,29 +756,110 @@ if (Test-Path $histFile) {
     foreach ($p in $viejo.PSObject.Properties) { $hist[$p.Name] = $p.Value }
   } catch { Log "AVISO: no pude leer historial-meses.json, se regenera" }
 }
-$mEA = 0; $mER = 0; $mCA = 0; $mCR = 0
+function NumH($v) { if ($null -eq $v) { return 0 } else { return $v } }
+# El mes anterior es el mes CALENDARIO anterior a hoy (no el del ultimo dato):
+# asi la tarjeta celebra el mes recien cerrado aunque el mes nuevo todavia no
+# tenga entregas cargadas. Con FORCE_MES no importa (no usamos su data.js).
+$mesAntKey = (Get-Date -Day 1).Date.AddMonths(-1).ToString("yyyy-MM")
+$maH = $hist[$mesAntKey]
+if ($maH -and $null -ne $maH.ranking) {
+  $maRank = @()
+  foreach ($rk in @($maH.ranking)) {
+    if (([string]$rk.nombre).ToUpper() -in $EXCLUIR) { continue }   # ocultar excluidos
+    $efEj = "null"; if ($null -ne $rk.efE) { $efEj = ([string]$rk.efE) -replace ",", "." }
+    $efCj = "null"; if ($null -ne $rk.efC) { $efCj = ([string]$rk.efC) -replace ",", "." }
+    $maRank += '{"nombre":"' + (JsonTxt $rk.nombre) + '","repartos":' + ([int](NumH $rk.repartos)) +
+      ',"efE":' + $efEj + ',"efC":' + $efCj + ',"premio":' + ([long](NumH $rk.premio)) + '}'
+  }
+  $maJson = '{"clave":"' + $mesAntKey + '","anio":' + [int]$mesAntKey.Substring(0, 4) + ',"mes":' + [int]$mesAntKey.Substring(5, 2) +
+    ',"efGeneral":' + ((([string](NumH $maH.efGeneral))) -replace ",", ".") +
+    ',"cartonGeneral":' + ((([string](NumH $maH.cartonGeneral))) -replace ",", ".") +
+    ',"repartos":' + [int](NumH $maH.repartos) +
+    ',"boletasEnt":' + [int](NumH $maH.boletasEnt) + ',"boletasSac":' + [int](NumH $maH.boletasSac) +
+    ',"clientesEnt":' + [int](NumH $maH.clientesEnt) + ',"clientesSac":' + [int](NumH $maH.clientesSac) +
+    ',"plataRech":' + [long](NumH $maH.plataRech) + ',"fleteros":' + [int](NumH $maH.fleteros) +
+    ',"premiosTotal":' + [long](NumH $maH.premiosTotal) +
+    ',"ranking":[' + ($maRank -join ",") + ']}'
+  [void]$sb.AppendLine("window.__PPP_DATA__.mesAnterior = " + $maJson + ";")
+  Log ("Tarjeta de cierre: mes anterior " + $mesAntKey + " emitido (" + $maRank.Count + " fleteros)")
+} else {
+  Log ("Tarjeta de cierre: sin datos ricos del mes anterior (" + $mesAntKey + ") todavia")
+}
+
+$utf8 = New-Object System.Text.UTF8Encoding($false)
+[System.IO.File]::WriteAllText((Join-Path $RAIZ "data.js"), $sb.ToString(), $utf8)
+Log "data.js generado"
+
+# ============================================================================
+# 3b) Historial mensual RICO (alimenta la tarjeta de cierre del mes siguiente)
+#     Guarda por mes: efectividad y carton generales, repartos, boletas y
+#     clientes, plata rechazada, premios totales, y el ranking por fletero
+#     (con entrega, carton y premio de cada uno). $hist y $histFile ya se
+#     leyeron arriba (seccion de la tarjeta de cierre).
+# ============================================================================
+# Dias habiles (lun-vie) del mes cerrado; los feriados NO se descuentan (regla
+# de la empresa: el feriado no trabajado se compensa repartiendo el sabado).
+$habMes = 0
+$dHab = [DateTime]($mesActual + "-01")
+while ($dHab.ToString("yyyy-MM") -eq $mesActual) {
+  $dow = [int]$dHab.DayOfWeek
+  if ($dow -ge 1 -and $dow -le 5) { $habMes++ }
+  $dHab = $dHab.AddDays(1)
+}
+# Agregacion del mes por fletero (excluye no-fleteros y los que Lucas oculta)
+$flAcum = @{}
 foreach ($clave in $claves) {
   if ($clave.Split("|")[0] -notlike "$mesActual*") { continue }
-  $choferH = $clave.Split("|")[1]
-  if ($choferH -in $EXCLUIR) { continue }
-  $e = $entregas[$clave]; $c = $cartones[$clave]
-  if ($e) { $mEA += $e.asig; $mER += $e.real }
-  if ($c) { $mCA += $c.sal; $mCR += $c.vue }
+  $choH = $clave.Split("|")[1]
+  if ($choH -in $EXCLUIR) { continue }
+  if (-not $flAcum[$choH]) { $flAcum[$choH] = @{ asig = 0; real = 0; sal = 0; vue = 0; rep = 0 } }
+  $eH = $entregas[$clave]; $cH = $cartones[$clave]
+  if ($eH) { $flAcum[$choH].asig += $eH.asig; $flAcum[$choH].real += $eH.real; if ($eH.rep) { $flAcum[$choH].rep += $eH.rep } }
+  if ($cH) { $flAcum[$choH].sal += $cH.sal; $flAcum[$choH].vue += $cH.vue }
 }
-$chJson = @{}
+$mEA = 0; $mER = 0; $mCA = 0; $mCR = 0; $mRep = 0; $premTot = 0
+$rankArr = @()
+foreach ($choH in ($flAcum.Keys | Sort-Object)) {
+  $a = $flAcum[$choH]
+  # El carton siempre suma al total de la empresa (aunque el nombre de la
+  # planilla no haya mapeado a un chofer); asi coincide con el anillo del panel.
+  $mCA += $a.sal; $mCR += $a.vue
+  # Pero el ranking/premios son SOLO de fleteros con repartos reales: una fila
+  # de carton sin repartos (nombre sin mapear) no es un fletero rankeable.
+  if ($a.rep -le 0) { continue }
+  $mEA += $a.asig; $mER += $a.real; $mRep += $a.rep
+  $efEh = $null; if ($a.asig -gt 0) { $efEh = [math]::Round(100.0 * $a.real / $a.asig, 1) }
+  $efCh = $null; if ($a.sal -gt 0) { $efCh = [math]::Round(100.0 * $a.vue / $a.sal, 1) }
+  # Asistencia = repartos / dias habiles (tope 100%); <85% no cobra premio
+  $asistH = $null; if ($habMes -gt 0) { $asistH = [math]::Min(100, [math]::Round(100.0 * $a.rep / $habMes)) }
+  $premH = 0
+  if ($null -ne $asistH -and $asistH -ge 85) {
+    if ($null -ne $efEh) { if ($efEh -ge 95) { $premH += 100000 } elseif ($efEh -ge 90) { $premH += 50000 } }
+    if ($null -ne $efCh) { if ($efCh -ge 80) { $premH += 150000 } elseif ($efCh -ge 70) { $premH += 100000 } elseif ($efCh -ge 60) { $premH += 50000 } }
+  }
+  $premTot += $premH
+  $rankArr += [PSCustomObject]@{ nombre = (NombreMostrar $choH); repartos = $a.rep; efE = $efEh; efC = $efCh; premio = $premH }
+}
+$rankArr = @($rankArr | Sort-Object { if ($null -eq $_.efE) { -1.0 } else { [double]$_.efE } } -Descending)
+$efGenH = 0.0; if ($mEA -gt 0) { $efGenH = [math]::Round(100.0 * $mER / $mEA, 1) }
+$carGenH = 0.0; if ($mCA -gt 0) { $carGenH = [math]::Round(100.0 * $mCR / $mCA, 1) }
+# Clientes del mes (de statsChofer, que ya excluye no-fleteros)
+$cliSacT = 0; $cliEntT = 0
 foreach ($cho in $statsChofer.Keys) {
   $s = $statsChofer[$cho]
-  $chJson[$cho] = @{ recTot = $s.recTot; recBol = $s.recBol; cliSac = $s.cliSac; compSac = $s.compSac }
+  $cliSacT += $s.cliSac; $cliEntT += ($s.cliSac - $s.recTot)
 }
 $hist[$mesActual] = @{
-  entregasAsignadas = $mEA; entregasRealizadas = $mER
-  cartonesSacados = $mCA; cartonesVueltos = $mCR
-  importeRechazado = $anImporte
+  efGeneral = $efGenH; cartonGeneral = $carGenH
+  boletasSac = $mEA; boletasEnt = $mER
+  clientesSac = $cliSacT; clientesEnt = $cliEntT
+  repartos = $mRep; plataRech = $anImporte
+  premiosTotal = $premTot; fleteros = $rankArr.Count
+  ranking = $rankArr
   actualizado = (Get-Date -Format "yyyy-MM-dd")
-  choferes = $chJson
 }
 [System.IO.File]::WriteAllText($histFile, ($hist | ConvertTo-Json -Depth 6), $utf8)
-Log ("Historial mensual actualizado (" + $mesActual + "; meses guardados: " + $hist.Count + ")")
+Log ("Historial mensual actualizado (" + $mesActual + "; " + $flAcum.Count + " fleteros, premios `$" + $premTot + "; meses: " + $hist.Count + ")")
 
 # ============================================================================
 # 4) Publicacion: la hace el workflow de GitHub Actions (commit de data.js
