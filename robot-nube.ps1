@@ -87,16 +87,23 @@ function Cerrar-Xlsx($libro) {
 
 function EsNumero($v) { return ($null -ne $v -and [string]$v -match "^-?\d+(\.\d+)?$") }
 
+# FORCE_MES=anterior -> resolver al mes CALENDARIO anterior (verificacion mensual
+# de cierre; asi el mismo workflow sirve para cualquier mes sin tocar nada).
+if ($env:FORCE_MES -eq "anterior") {
+  $env:FORCE_MES = (Get-Date -Day 1).Date.AddMonths(-1).ToString("yyyy-MM")
+}
+
 # ============================================================================
 Log ("================ INICIO (" + $MODO + ") ================")
+if ($env:FORCE_MES) { Log ("Modo VERIFICACION del mes " + $env:FORCE_MES) }
 
 # --- Bajar los datos UNA sola vez por dia ---------------------------------
 # Hay varias corridas programadas por dia (respaldos por si GitHub demora o
 # saltea alguna). Para no cargar la API de Gescom de mas, si el panel YA se
 # actualizo hoy y esta es una corrida automatica, salimos sin bajar nada.
-# Las corridas MANUALES (Run workflow) siempre actualizan, para poder forzar.
+# Las corridas MANUALES (Run workflow) y las de VERIFICACION (FORCE_MES) siempre corren.
 $dataActual = Join-Path $RAIZ "data.js"
-if ($env:GITHUB_EVENT_NAME -eq "schedule" -and (Test-Path $dataActual)) {
+if ($env:GITHUB_EVENT_NAME -eq "schedule" -and -not $env:FORCE_MES -and (Test-Path $dataActual)) {
   $cabecera = (Get-Content $dataActual -TotalCount 3 -Encoding UTF8) -join "`n"
   $hoyStr = (Get-Date -Format "yyyy-MM-dd")
   if ($cabecera -match ("Ultima actualizacion: " + [regex]::Escape($hoyStr))) {
