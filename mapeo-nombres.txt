@@ -24,6 +24,10 @@ Ariel = ARIEL RIVEROS
 Nicolas = NICOLAS OVIEDO
 Alan = ALAN PEREZ
 
+# Nombres mal escritos en la planilla de carton (03/08)
+Javier R = JAVIER SOTELO
+Matias M = MATIAS AMAYA
+
 # Excluidos de la web (mapearlos a su nombre completo hace que el filtro los saque)
 Ezequiel H = EZEQUIEL HEREDIA
 Marcelo V = MARCELO VACA
