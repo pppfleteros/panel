@@ -1,150 +1,178 @@
 {
     "2026-07":  {
-                    "importeRechazado":  82160425,
-                    "choferes":  {
-                                     "NICOLAS OVIEDO":  {
-                                                            "recTot":  25,
-                                                            "cliSac":  660,
-                                                            "compSac":  1286,
-                                                            "recBol":  56
-                                                        },
-                                     "GABRIEL FLORES":  {
-                                                            "recTot":  41,
-                                                            "cliSac":  605,
-                                                            "compSac":  1027,
-                                                            "recBol":  78
-                                                        },
-                                     "ALAN PEREZ":  {
-                                                        "recTot":  24,
-                                                        "cliSac":  578,
-                                                        "compSac":  874,
-                                                        "recBol":  39
-                                                    },
-                                     "LUCAS MATIAS RODRIGUEZ":  {
-                                                                    "recTot":  33,
-                                                                    "cliSac":  708,
-                                                                    "compSac":  1175,
-                                                                    "recBol":  63
-                                                                },
-                                     "PABLO MOYANO":  {
-                                                          "recTot":  17,
-                                                          "cliSac":  580,
-                                                          "compSac":  954,
-                                                          "recBol":  32
-                                                      },
-                                     "CRISTIAN CARRIZO":  {
-                                                              "recTot":  27,
-                                                              "cliSac":  634,
-                                                              "compSac":  1020,
-                                                              "recBol":  62
-                                                          },
-                                     "CARLOS CRESPO":  {
-                                                           "recTot":  7,
-                                                           "cliSac":  633,
-                                                           "compSac":  938,
-                                                           "recBol":  16
-                                                       },
-                                     "LUCAS GUIERING":  {
-                                                            "recTot":  39,
-                                                            "cliSac":  479,
-                                                            "compSac":  870,
-                                                            "recBol":  93
-                                                        },
-                                     "RODRIGO CALO":  {
-                                                          "recTot":  17,
-                                                          "cliSac":  512,
-                                                          "compSac":  883,
-                                                          "recBol":  46
-                                                      },
-                                     "HECTOR ROLDAN":  {
-                                                           "recTot":  22,
-                                                           "cliSac":  600,
-                                                           "compSac":  1022,
-                                                           "recBol":  52
-                                                       },
-                                     "LEANDRO SANCHEZ":  {
-                                                             "recTot":  23,
-                                                             "cliSac":  583,
-                                                             "compSac":  980,
-                                                             "recBol":  56
-                                                         },
-                                     "GUILLERMO GUZMAN":  {
-                                                              "recTot":  12,
-                                                              "cliSac":  697,
-                                                              "compSac":  1199,
-                                                              "recBol":  30
-                                                          },
-                                     "LUCAS CALVO":  {
-                                                         "recTot":  34,
-                                                         "cliSac":  489,
-                                                         "compSac":  845,
-                                                         "recBol":  66
-                                                     },
-                                     "JONATHAN PINAZO":  {
-                                                             "recTot":  18,
-                                                             "cliSac":  232,
-                                                             "compSac":  414,
-                                                             "recBol":  49
-                                                         },
-                                     "MATIAS AMAYA":  {
-                                                          "recTot":  14,
-                                                          "cliSac":  653,
-                                                          "compSac":  970,
-                                                          "recBol":  33
-                                                      },
-                                     "ARIEL RIVEROS":  {
-                                                           "recTot":  25,
-                                                           "cliSac":  671,
-                                                           "compSac":  1023,
-                                                           "recBol":  43
-                                                       },
-                                     "JAVIER SOTELO":  {
-                                                           "recTot":  16,
-                                                           "cliSac":  605,
-                                                           "compSac":  1075,
-                                                           "recBol":  36
-                                                       },
-                                     "MAXIMILIANO PINAZO":  {
-                                                                "recTot":  29,
-                                                                "cliSac":  334,
-                                                                "compSac":  595,
-                                                                "recBol":  58
-                                                            },
-                                     "CLAUDIO PONCE":  {
-                                                           "recTot":  15,
-                                                           "cliSac":  359,
-                                                           "compSac":  706,
-                                                           "recBol":  36
-                                                       },
-                                     "DANIEL MENDOZA":  {
-                                                            "recTot":  19,
-                                                            "cliSac":  591,
-                                                            "compSac":  918,
-                                                            "recBol":  40
-                                                        },
-                                     "JULIO MORAN":  {
-                                                         "recTot":  23,
-                                                         "cliSac":  856,
-                                                         "compSac":  1252,
-                                                         "recBol":  53
-                                                     },
-                                     "RUBEN SALVATIERRA":  {
-                                                               "recTot":  19,
-                                                               "cliSac":  346,
-                                                               "compSac":  669,
-                                                               "recBol":  36
-                                                           },
-                                     "DAVID ALVAREZ":  {
-                                                           "recTot":  20,
-                                                           "cliSac":  677,
-                                                           "compSac":  1176,
-                                                           "recBol":  46
-                                                       }
-                                 },
-                    "cartonesVueltos":  10118,
-                    "entregasAsignadas":  23506,
-                    "entregasRealizadas":  21911,
-                    "cartonesSacados":  21024,
-                    "actualizado":  "2026-07-31"
+                    "boletasEnt":  21908,
+                    "boletasSac":  23506,
+                    "efGeneral":  93.2,
+                    "fleteros":  23,
+                    "clientesEnt":  12564,
+                    "cartonGeneral":  48.1,
+                    "clientesSac":  13083,
+                    "repartos":  511,
+                    "premiosTotal":  1300000,
+                    "ranking":  [
+                                    {
+                                        "nombre":  "Guillermo Guzman",
+                                        "repartos":  24,
+                                        "efE":  96.4,
+                                        "efC":  57.8,
+                                        "premio":  100000
+                                    },
+                                    {
+                                        "nombre":  "Carlos Crespo",
+                                        "repartos":  22,
+                                        "efE":  95.9,
+                                        "efC":  60.1,
+                                        "premio":  150000
+                                    },
+                                    {
+                                        "nombre":  "David Alvarez",
+                                        "repartos":  25,
+                                        "efE":  95.7,
+                                        "efC":  37.7,
+                                        "premio":  100000
+                                    },
+                                    {
+                                        "nombre":  "Javier Sotelo",
+                                        "repartos":  22,
+                                        "efE":  95.4,
+                                        "efC":  53.3,
+                                        "premio":  100000
+                                    },
+                                    {
+                                        "nombre":  "Pablo Moyano",
+                                        "repartos":  19,
+                                        "efE":  95.4,
+                                        "efC":  43.5,
+                                        "premio":  0
+                                    },
+                                    {
+                                        "nombre":  "Matias Amaya",
+                                        "repartos":  22,
+                                        "efE":  95.2,
+                                        "efC":  63,
+                                        "premio":  150000
+                                    },
+                                    {
+                                        "nombre":  "Nicolas Oviedo",
+                                        "repartos":  25,
+                                        "efE":  94.2,
+                                        "efC":  28.5,
+                                        "premio":  50000
+                                    },
+                                    {
+                                        "nombre":  "Leandro Sanchez",
+                                        "repartos":  23,
+                                        "efE":  94.1,
+                                        "efC":  46.8,
+                                        "premio":  50000
+                                    },
+                                    {
+                                        "nombre":  "Ariel Riveros",
+                                        "repartos":  23,
+                                        "efE":  94.1,
+                                        "efC":  45.2,
+                                        "premio":  50000
+                                    },
+                                    {
+                                        "nombre":  "Rodrigo Calo",
+                                        "repartos":  19,
+                                        "efE":  94.1,
+                                        "efC":  43.9,
+                                        "premio":  0
+                                    },
+                                    {
+                                        "nombre":  "Daniel Mendoza",
+                                        "repartos":  21,
+                                        "efE":  93.9,
+                                        "efC":  44.7,
+                                        "premio":  50000
+                                    },
+                                    {
+                                        "nombre":  "Julio Moran",
+                                        "repartos":  27,
+                                        "efE":  93.7,
+                                        "efC":  71.5,
+                                        "premio":  150000
+                                    },
+                                    {
+                                        "nombre":  "Alan Perez",
+                                        "repartos":  20,
+                                        "efE":  93.4,
+                                        "efC":  60.8,
+                                        "premio":  100000
+                                    },
+                                    {
+                                        "nombre":  "Lucas Matias Rodriguez",
+                                        "repartos":  24,
+                                        "efE":  93.1,
+                                        "efC":  44.1,
+                                        "premio":  50000
+                                    },
+                                    {
+                                        "nombre":  "Hector Roldan",
+                                        "repartos":  21,
+                                        "efE":  93.1,
+                                        "efC":  68.5,
+                                        "premio":  100000
+                                    },
+                                    {
+                                        "nombre":  "Cristian Carrizo",
+                                        "repartos":  26,
+                                        "efE":  92.3,
+                                        "efC":  40.5,
+                                        "premio":  50000
+                                    },
+                                    {
+                                        "nombre":  "Gabriel Flores",
+                                        "repartos":  20,
+                                        "efE":  92.1,
+                                        "efC":  46.9,
+                                        "premio":  50000
+                                    },
+                                    {
+                                        "nombre":  "Claudio Ponce",
+                                        "repartos":  27,
+                                        "efE":  89.7,
+                                        "efC":  null,
+                                        "premio":  0
+                                    },
+                                    {
+                                        "nombre":  "Ruben Salvatierra",
+                                        "repartos":  31,
+                                        "efE":  89.7,
+                                        "efC":  19,
+                                        "premio":  0
+                                    },
+                                    {
+                                        "nombre":  "Jonathan Pinazo",
+                                        "repartos":  12,
+                                        "efE":  88.5,
+                                        "efC":  20.4,
+                                        "premio":  0
+                                    },
+                                    {
+                                        "nombre":  "Lucas Calvo",
+                                        "repartos":  21,
+                                        "efE":  88.5,
+                                        "efC":  32.2,
+                                        "premio":  0
+                                    },
+                                    {
+                                        "nombre":  "Lucas Guiering",
+                                        "repartos":  21,
+                                        "efE":  87.9,
+                                        "efC":  27.4,
+                                        "premio":  0
+                                    },
+                                    {
+                                        "nombre":  "Maximiliano Pinazo",
+                                        "repartos":  16,
+                                        "efE":  86.8,
+                                        "efC":  36,
+                                        "premio":  0
+                                    }
+                                ],
+                    "plataRech":  82260753,
+                    "actualizado":  "2026-08-03"
                 }
 }
