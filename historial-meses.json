@@ -174,5 +174,153 @@
                                 ],
                     "plataRech":  82260753,
                     "actualizado":  "2026-08-03"
+                },
+    "2026-08":  {
+                    "boletasEnt":  921,
+                    "boletasSac":  921,
+                    "efGeneral":  100,
+                    "fleteros":  19,
+                    "clientesEnt":  500,
+                    "cartonGeneral":  0,
+                    "clientesSac":  500,
+                    "repartos":  19,
+                    "premiosTotal":  0,
+                    "ranking":  [
+                                    {
+                                        "nombre":  "Lucas Matias Rodriguez",
+                                        "repartos":  1,
+                                        "efE":  100,
+                                        "efC":  null,
+                                        "premio":  0
+                                    },
+                                    {
+                                        "nombre":  "Matias Amaya",
+                                        "repartos":  1,
+                                        "efE":  100,
+                                        "efC":  null,
+                                        "premio":  0
+                                    },
+                                    {
+                                        "nombre":  "Leandro Sanchez",
+                                        "repartos":  1,
+                                        "efE":  100,
+                                        "efC":  null,
+                                        "premio":  0
+                                    },
+                                    {
+                                        "nombre":  "Lucas Calvo",
+                                        "repartos":  1,
+                                        "efE":  100,
+                                        "efC":  null,
+                                        "premio":  0
+                                    },
+                                    {
+                                        "nombre":  "Maximiliano Pinazo",
+                                        "repartos":  1,
+                                        "efE":  100,
+                                        "efC":  null,
+                                        "premio":  0
+                                    },
+                                    {
+                                        "nombre":  "Rodrigo Calo",
+                                        "repartos":  1,
+                                        "efE":  100,
+                                        "efC":  null,
+                                        "premio":  0
+                                    },
+                                    {
+                                        "nombre":  "Ruben Salvatierra",
+                                        "repartos":  1,
+                                        "efE":  100,
+                                        "efC":  null,
+                                        "premio":  0
+                                    },
+                                    {
+                                        "nombre":  "Nicolas Oviedo",
+                                        "repartos":  1,
+                                        "efE":  100,
+                                        "efC":  null,
+                                        "premio":  0
+                                    },
+                                    {
+                                        "nombre":  "Pablo Moyano",
+                                        "repartos":  1,
+                                        "efE":  100,
+                                        "efC":  null,
+                                        "premio":  0
+                                    },
+                                    {
+                                        "nombre":  "Julio Moran",
+                                        "repartos":  1,
+                                        "efE":  100,
+                                        "efC":  null,
+                                        "premio":  0
+                                    },
+                                    {
+                                        "nombre":  "Cristian Carrizo",
+                                        "repartos":  1,
+                                        "efE":  100,
+                                        "efC":  null,
+                                        "premio":  0
+                                    },
+                                    {
+                                        "nombre":  "Daniel Mendoza",
+                                        "repartos":  1,
+                                        "efE":  100,
+                                        "efC":  null,
+                                        "premio":  0
+                                    },
+                                    {
+                                        "nombre":  "Ariel Riveros",
+                                        "repartos":  1,
+                                        "efE":  100,
+                                        "efC":  null,
+                                        "premio":  0
+                                    },
+                                    {
+                                        "nombre":  "Claudio Ponce",
+                                        "repartos":  1,
+                                        "efE":  100,
+                                        "efC":  null,
+                                        "premio":  0
+                                    },
+                                    {
+                                        "nombre":  "David Alvarez",
+                                        "repartos":  1,
+                                        "efE":  100,
+                                        "efC":  null,
+                                        "premio":  0
+                                    },
+                                    {
+                                        "nombre":  "Hector Roldan",
+                                        "repartos":  1,
+                                        "efE":  100,
+                                        "efC":  null,
+                                        "premio":  0
+                                    },
+                                    {
+                                        "nombre":  "Javier Sotelo",
+                                        "repartos":  1,
+                                        "efE":  100,
+                                        "efC":  null,
+                                        "premio":  0
+                                    },
+                                    {
+                                        "nombre":  "Gabriel Flores",
+                                        "repartos":  1,
+                                        "efE":  100,
+                                        "efC":  null,
+                                        "premio":  0
+                                    },
+                                    {
+                                        "nombre":  "Guillermo Guzman",
+                                        "repartos":  1,
+                                        "efE":  100,
+                                        "efC":  null,
+                                        "premio":  0
+                                    }
+                                ],
+                    "plataRech":  25047,
+                    "actualizado":  "2026-08-03"
                 }
 }
