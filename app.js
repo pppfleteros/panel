@@ -374,8 +374,106 @@
     return cont;
   }
 
+  // ---- Tarjeta de cierre de mes -----------------------------------------
+  // Banner con los números FINALES del mes anterior ya cerrado. Aparece del
+  // día 10 en adelante; ?cierre=1 la fuerza para previsualizar cualquier día;
+  // se puede cerrar con la X (reaparece el mes siguiente).
+  function fmtNum(n) { return String(Math.round(n || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, "."); }
+  function fmtPctN(n) {
+    if (n == null) return "—";
+    return (Math.round(n * 10) / 10).toString().replace(".", ",") + "%";
+  }
+  function tarjetaCierreMes(datos) {
+    var ma = datos.mesAnterior;
+    if (!ma || !ma.ranking || !ma.ranking.length) return null;
+    var forzar = /[?&]cierre=1/.test(location.search);
+    if (!forzar) {
+      if (new Date().getDate() < 10) return null;
+      try { if (localStorage.getItem("ppp_cierre_" + ma.clave)) return null; } catch (e) {}
+    }
+    var nombreMes = (NOMBRES_MES[(ma.mes || 1) - 1] || "") + " " + (ma.anio || "");
+    function dato(k, v) {
+      return '<div class="cierre__dato"><span>' + k + '</span><b>' + v + '</b></div>';
+    }
+    var filas =
+      dato("Repartos", fmtNum(ma.repartos)) +
+      dato("Retorno de cartón", fmtPctN(ma.cartonGeneral)) +
+      dato("Boletas entregadas", fmtNum(ma.boletasEnt) + " / " + fmtNum(ma.boletasSac)) +
+      dato("Clientes entregados", fmtNum(ma.clientesEnt) + " / " + fmtNum(ma.clientesSac)) +
+      dato("Plata rechazada", fmtPlata(ma.plataRech)) +
+      dato("Premios pagados", fmtPlata(ma.premiosTotal));
+    var card = el("div", "cierre reveal");
+    card.innerHTML =
+      '<button class="cierre__x" aria-label="Cerrar">&times;</button>' +
+      '<div class="cierre__top">🎉 Mirá cómo cerró ' + nombreMes + '</div>' +
+      '<div class="cierre__ef"><span class="cierre__efnum">' + fmtPctN(ma.efGeneral) + '</span>' +
+        '<span class="cierre__eflbl">efectividad de entrega del mes<br>' + fmtNum(ma.fleteros) + ' fleteros</span></div>' +
+      '<div class="cierre__grid">' + filas + '</div>' +
+      '<button class="cierre__ver">Ver cómo quedó cada fletero →</button>';
+    card.querySelector(".cierre__x").addEventListener("click", function () {
+      try { localStorage.setItem("ppp_cierre_" + ma.clave, "1"); } catch (e) {}
+      card.parentNode && card.parentNode.removeChild(card);
+    });
+    card.querySelector(".cierre__ver").addEventListener("click", function () {
+      seleccionar("__cierre__");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+    return card;
+  }
+
+  // ---- Vista: ranking final del mes cerrado -----------------------------
+  function vistaCierreDetalle(datos) {
+    var cont = el("div", "view");
+    var ma = datos.mesAnterior;
+    var volver = el("button", "volver", "← Volver al resumen");
+    volver.addEventListener("click", function () {
+      seleccionar("__general__");
+      var sel = $("#selector"); if (sel) sel.value = "__general__";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+    cont.appendChild(volver);
+    if (!ma || !ma.ranking || !ma.ranking.length) {
+      cont.appendChild(el("p", "muted", "No hay detalle del mes anterior todavía."));
+      return cont;
+    }
+    var nombreMesCorto = NOMBRES_MES[(ma.mes || 1) - 1] || "";
+    var nombreMes = nombreMesCorto + " " + (ma.anio || "");
+    var lista = ma.ranking.slice().sort(function (a, b) { return (b.efE || 0) - (a.efE || 0); });
+    var tabla = el("div", "rank reveal");
+    var head =
+      '<div class="rank__head"><span>#</span><span>Fletero</span>' +
+      '<span class="rank__num">Rep.</span><span class="rank__num">Entrega</span>' +
+      '<span class="rank__num">Cartón</span><span class="rank__num">Premio</span></div>';
+    var body = lista.map(function (f, i) {
+      var medal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : (i + 1);
+      var bar = Math.max(4, Math.min(100, f.efE || 0));
+      var premioHTML = (f.premio > 0)
+        ? '<span class="rank__num rank__prize">💰 ' + fmtPlata(f.premio) + '</span>'
+        : '<span class="rank__num rank__prize rank__prize--none">—</span>';
+      return '<div class="rank__row rank__row--static">' +
+        '<span class="rank__pos">' + medal + '</span>' +
+        '<span class="rank__name"><b>' + f.nombre + '</b>' +
+          '<i class="rank__track"><i class="rank__fill rank__fill--' + claseColor(f.efE) + '" style="width:2%" data-w="' + bar + '"></i></i>' +
+        '</span>' +
+        '<span class="rank__num">' + f.repartos + '</span>' +
+        '<span class="rank__num">' + chip(f.efE) + '</span>' +
+        '<span class="rank__num">' + chip(f.efC) + '</span>' +
+        premioHTML +
+      '</div>';
+    }).join("");
+    tabla.innerHTML =
+      '<h2 class="rank__title">🏁 Así cerró ' + nombreMes + ' · ranking final</h2>' +
+      '<div class="rank__grid rank__grid--cierre">' + head + body + '</div>' +
+      '<p class="rank__hint">Entrega, cartón y premio definitivos de cada fletero en ' +
+        nombreMesCorto + '. Los premios requieren 85% de asistencia o más.</p>';
+    cont.appendChild(tabla);
+    return cont;
+  }
+
   function vistaGeneral(datos) {
     var cont = el("div", "view");
+    var cierre = tarjetaCierreMes(datos);
+    if (cierre) cont.appendChild(cierre);
     var nombres = Object.keys(datos.porFletero);
 
     // Totales de la empresa del mes en curso
@@ -663,6 +761,7 @@
     main.innerHTML = "";
     var v = STATE.seleccion === "__general__" ? vistaGeneral(STATE.datos)
       : STATE.seleccion === "__rechazos__" ? vistaRechazos(STATE.datos)
+      : STATE.seleccion === "__cierre__" ? vistaCierreDetalle(STATE.datos)
       : vistaFletero(STATE.datos, STATE.seleccion);
     main.appendChild(v);
 
@@ -689,7 +788,8 @@
 
   function seleccionar(nombre) {
     STATE.seleccion = nombre;
-    try { localStorage.setItem("ppp_fletero", nombre); } catch (e) {}
+    // No persistimos la vista transitoria del cierre de mes
+    if (nombre !== "__cierre__") { try { localStorage.setItem("ppp_fletero", nombre); } catch (e) {} }
     render();
   }
 
@@ -725,7 +825,8 @@
 
   function prepararDatos(registros) {
     var porFletero = agrupaPorFletero(registros);
-    STATE.datos = { registros: registros, porFletero: porFletero };
+    var mesAnterior = (window.__PPP_DATA__ && window.__PPP_DATA__.mesAnterior) || null;
+    STATE.datos = { registros: registros, porFletero: porFletero, mesAnterior: mesAnterior };
     poblarSelector(STATE.datos);
     ultimaActualizacion(registros);
     render();
