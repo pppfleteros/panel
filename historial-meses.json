@@ -4,9 +4,9 @@
                     "boletasSac":  23506,
                     "efGeneral":  93.2,
                     "fleteros":  23,
-                    "clientesEnt":  12564,
+                    "clientesEnt":  12563,
                     "cartonGeneral":  48.1,
-                    "clientesSac":  13083,
+                    "clientesSac":  13082,
                     "repartos":  511,
                     "premiosTotal":  1300000,
                     "ranking":  [
@@ -32,13 +32,6 @@
                                         "premio":  100000
                                     },
                                     {
-                                        "nombre":  "Javier Sotelo",
-                                        "repartos":  22,
-                                        "efE":  95.4,
-                                        "efC":  53.3,
-                                        "premio":  100000
-                                    },
-                                    {
                                         "nombre":  "Pablo Moyano",
                                         "repartos":  19,
                                         "efE":  95.4,
@@ -46,10 +39,17 @@
                                         "premio":  0
                                     },
                                     {
+                                        "nombre":  "Javier Sotelo",
+                                        "repartos":  22,
+                                        "efE":  95.4,
+                                        "efC":  52.8,
+                                        "premio":  100000
+                                    },
+                                    {
                                         "nombre":  "Matias Amaya",
                                         "repartos":  22,
                                         "efE":  95.2,
-                                        "efC":  63,
+                                        "efC":  62.4,
                                         "premio":  150000
                                     },
                                     {
@@ -60,17 +60,17 @@
                                         "premio":  50000
                                     },
                                     {
-                                        "nombre":  "Leandro Sanchez",
-                                        "repartos":  23,
-                                        "efE":  94.1,
-                                        "efC":  46.8,
-                                        "premio":  50000
-                                    },
-                                    {
                                         "nombre":  "Ariel Riveros",
                                         "repartos":  23,
                                         "efE":  94.1,
                                         "efC":  45.2,
+                                        "premio":  50000
+                                    },
+                                    {
+                                        "nombre":  "Leandro Sanchez",
+                                        "repartos":  23,
+                                        "efE":  94.1,
+                                        "efC":  46.8,
                                         "premio":  50000
                                     },
                                     {
@@ -130,17 +130,17 @@
                                         "premio":  50000
                                     },
                                     {
-                                        "nombre":  "Claudio Ponce",
-                                        "repartos":  27,
-                                        "efE":  89.7,
-                                        "efC":  null,
-                                        "premio":  0
-                                    },
-                                    {
                                         "nombre":  "Ruben Salvatierra",
                                         "repartos":  31,
                                         "efE":  89.7,
                                         "efC":  19,
+                                        "premio":  0
+                                    },
+                                    {
+                                        "nombre":  "Claudio Ponce",
+                                        "repartos":  27,
+                                        "efE":  89.7,
+                                        "efC":  null,
                                         "premio":  0
                                     },
                                     {
