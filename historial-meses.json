@@ -4,9 +4,9 @@
                     "boletasSac":  23506,
                     "efGeneral":  93.2,
                     "fleteros":  23,
-                    "clientesEnt":  12563,
+                    "clientesEnt":  12564,
                     "cartonGeneral":  48.1,
-                    "clientesSac":  13082,
+                    "clientesSac":  13083,
                     "repartos":  511,
                     "premiosTotal":  1300000,
                     "ranking":  [
@@ -173,7 +173,7 @@
                                     }
                                 ],
                     "plataRech":  82260753,
-                    "actualizado":  "2026-08-03"
+                    "actualizado":  "2026-08-10"
                 },
     "2026-08":  {
                     "boletasEnt":  6219,
