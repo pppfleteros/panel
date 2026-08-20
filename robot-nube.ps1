@@ -780,8 +780,10 @@ if ($maH -and $null -ne $maH.ranking) {
     if (([string]$rk.nombre).ToUpper() -in $EXCLUIR) { continue }   # ocultar excluidos
     $efEj = "null"; if ($null -ne $rk.efE) { $efEj = ([string]$rk.efE) -replace ",", "." }
     $efCj = "null"; if ($null -ne $rk.efC) { $efCj = ([string]$rk.efC) -replace ",", "." }
+    # asist puede faltar en meses guardados antes (la web la recalcula sola)
+    $asJ = "null"; if ($null -ne $rk.asist) { $asJ = ([string]$rk.asist) -replace ",", "." }
     $maRank += '{"nombre":"' + (JsonTxt $rk.nombre) + '","repartos":' + ([int](NumH $rk.repartos)) +
-      ',"efE":' + $efEj + ',"efC":' + $efCj + ',"premio":' + ([long](NumH $rk.premio)) + '}'
+      ',"asist":' + $asJ + ',"efE":' + $efEj + ',"efC":' + $efCj + ',"premio":' + ([long](NumH $rk.premio)) + '}'
   }
   $maJson = '{"clave":"' + $mesAntKey + '","anio":' + [int]$mesAntKey.Substring(0, 4) + ',"mes":' + [int]$mesAntKey.Substring(5, 2) +
     ',"efGeneral":' + ((([string](NumH $maH.efGeneral))) -replace ",", ".") +
@@ -850,7 +852,7 @@ foreach ($choH in ($flAcum.Keys | Sort-Object)) {
     if ($null -ne $efCh) { if ($efCh -ge 80) { $premH += 150000 } elseif ($efCh -ge 70) { $premH += 100000 } elseif ($efCh -ge 60) { $premH += 50000 } }
   }
   $premTot += $premH
-  $rankArr += [PSCustomObject]@{ nombre = (NombreMostrar $choH); repartos = $a.rep; efE = $efEh; efC = $efCh; premio = $premH }
+  $rankArr += [PSCustomObject]@{ nombre = (NombreMostrar $choH); repartos = $a.rep; asist = $asistH; efE = $efEh; efC = $efCh; premio = $premH }
 }
 $rankArr = @($rankArr | Sort-Object { if ($null -eq $_.efE) { -1.0 } else { [double]$_.efE } } -Descending)
 $efGenH = 0.0; if ($mEA -gt 0) { $efGenH = [math]::Round(100.0 * $mER / $mEA, 1) }
