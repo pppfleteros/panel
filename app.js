@@ -422,6 +422,20 @@
   }
 
   // ---- Vista: ranking final del mes cerrado -----------------------------
+  // Días hábiles (lunes a viernes) de un mes ya cerrado. Los feriados NO se
+  // descuentan (regla de la empresa: el feriado que no se trabaja se compensa
+  // repartiendo el sábado). Solo se usa como respaldo, si el dato de asistencia
+  // no viene guardado en el historial (meses viejos).
+  function habilesDeMes(anio, mes) {
+    var dias = new Date(anio, mes, 0).getDate();
+    var h = 0;
+    for (var d = 1; d <= dias; d++) {
+      var w = new Date(anio, mes - 1, d).getDay();
+      if (w >= 1 && w <= 5) h++;
+    }
+    return h;
+  }
+
   function vistaCierreDetalle(datos) {
     var cont = el("div", "view");
     var ma = datos.mesAnterior;
@@ -438,34 +452,75 @@
     }
     var nombreMesCorto = NOMBRES_MES[(ma.mes || 1) - 1] || "";
     var nombreMes = nombreMesCorto + " " + (ma.anio || "");
+    var ASIST_MIN_PREMIO = 85;
+    var habiles = habilesDeMes(ma.anio || 2026, ma.mes || 1);
+
+    // Tarjeta para llevarse la tabla en papel al momento de pagar
+    var pc = el("div", "printcard reveal");
+    pc.innerHTML =
+      '<div class="printcard__txt"><b>🖨️ ¿Vas a pagar los premios?</b>' +
+      '<span>Imprimí esta tabla y tenela en papel.</span></div>' +
+      '<button class="printcard__btn" type="button">Imprimir tabla</button>';
+    pc.querySelector(".printcard__btn").addEventListener("click", function () { window.print(); });
+    cont.appendChild(pc);
+
+    // Encabezado que solo aparece en el papel (la web ya tiene su propio título)
+    var enc = el("div", "printhead");
+    var hoyTxt = new Date().toLocaleDateString("es-AR");
+    enc.innerHTML = '<b>Primeros Productos Pehuenia S.A. · Premios de ' + nombreMes + '</b>' +
+      '<span>Ranking final de fleteros · impreso el ' + hoyTxt + '</span>';
+    cont.appendChild(enc);
+
     var lista = ma.ranking.slice().sort(function (a, b) { return (b.efE || 0) - (a.efE || 0); });
     var tabla = el("div", "rank reveal");
     var head =
       '<div class="rank__head"><span>#</span><span>Fletero</span>' +
-      '<span class="rank__num">Rep.</span><span class="rank__num">Entrega</span>' +
+      '<span class="rank__num">Rep.</span><span class="rank__num">Asist.</span>' +
+      '<span class="rank__num">Entrega</span>' +
       '<span class="rank__num">Cartón</span><span class="rank__num">Premio</span></div>';
+    var totalPremios = 0;
     var body = lista.map(function (f, i) {
       var medal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : (i + 1);
       var bar = Math.max(4, Math.min(100, f.efE || 0));
+      totalPremios += (f.premio || 0);
       var premioHTML = (f.premio > 0)
-        ? '<span class="rank__num rank__prize">💰 ' + fmtPlata(f.premio) + '</span>'
+        ? '<span class="rank__num rank__prize"><i class="rank__prize-ico">💰</i>' + fmtPlata(f.premio) + '</span>'
         : '<span class="rank__num rank__prize rank__prize--none">—</span>';
+      // Asistencia: viene del historial; si es un mes viejo se recalcula acá.
+      var asist = (f.asist != null) ? f.asist
+        : (habiles > 0 ? Math.min(100, Math.round(100 * (f.repartos || 0) / habiles)) : null);
+      var asistHTML = asist == null
+        ? '<span class="rank__num">—</span>'
+        : '<span class="rank__num"><span class="chip ' +
+          (asist >= ASIST_MIN_PREMIO ? "chip--ok" : "chip--low") + '"' +
+          ' title="' + (f.repartos || 0) + ' repartos en ' + habiles + ' días hábiles">' +
+          asist + '%</span></span>';
       return '<div class="rank__row rank__row--static">' +
         '<span class="rank__pos">' + medal + '</span>' +
         '<span class="rank__name"><b>' + f.nombre + '</b>' +
           '<i class="rank__track"><i class="rank__fill rank__fill--' + claseColor(f.efE) + '" style="width:2%" data-w="' + bar + '"></i></i>' +
         '</span>' +
         '<span class="rank__num">' + f.repartos + '</span>' +
+        asistHTML +
         '<span class="rank__num">' + chip(f.efE) + '</span>' +
         '<span class="rank__num">' + chip(f.efC) + '</span>' +
         premioHTML +
       '</div>';
     }).join("");
+    var cobran = lista.filter(function (f) { return f.premio > 0; }).length;
+    var filaTotal =
+      '<div class="rank__row rank__row--total">' +
+      '<span class="rank__pos"></span>' +
+      '<span class="rank__name"><b>TOTAL A PAGAR</b><em>' + cobran + ' de ' + lista.length + ' fleteros cobran</em></span>' +
+      '<span class="rank__num"></span><span class="rank__num"></span>' +
+      '<span class="rank__num"></span><span class="rank__num"></span>' +
+      '<span class="rank__num rank__prize">' + fmtPlata(totalPremios) + '</span>' +
+      '</div>';
     tabla.innerHTML =
       '<h2 class="rank__title">🏁 Así cerró ' + nombreMes + ' · ranking final</h2>' +
-      '<div class="rank__grid rank__grid--cierre">' + head + body + '</div>' +
-      '<p class="rank__hint">Entrega, cartón y premio definitivos de cada fletero en ' +
-        nombreMesCorto + '. Los premios requieren 85% de asistencia o más.</p>';
+      '<div class="rank__grid rank__grid--cierre">' + head + body + filaTotal + '</div>' +
+      '<p class="rank__hint">Asistencia, entrega, cartón y premio definitivos de cada fletero en ' +
+        nombreMesCorto + '. Los premios requieren ' + ASIST_MIN_PREMIO + '% de asistencia o más.</p>';
     cont.appendChild(tabla);
     return cont;
   }
