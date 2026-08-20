@@ -23,7 +23,10 @@
     if (html != null) n.innerHTML = html;
     return n;
   }
-  function pct(x) { return x == null ? null : Math.round(x * 1000) / 10; } // 1 decimal
+  // Porcentajes SIN decimales (regla de la empresa, 20/8): de ,50 para arriba
+  // redondea para arriba y de ,49 para abajo. Los premios se calculan sobre
+  // este número redondeado, así el fletero cobra por lo que ve en pantalla.
+  function pct(x) { return x == null ? null : Math.round(x * 100); }
   function claseColor(p) {
     if (p == null) return "n";
     if (p >= UMBRAL.bueno) return "ok";
@@ -229,9 +232,9 @@
       if (start == null) start = t;
       var k = Math.min(1, (t - start) / dur);
       var eased = 1 - Math.pow(1 - k, 3);
-      d.numEl.textContent = (d.raw * eased).toFixed(1).replace(".0", "");
+      d.numEl.textContent = Math.round(d.raw * eased);
       if (k < 1) requestAnimationFrame(step);
-      else d.numEl.textContent = (Math.round(d.raw * 10) / 10).toString().replace(/\.0$/, "");
+      else d.numEl.textContent = Math.round(d.raw);
     }
     requestAnimationFrame(step);
   }
@@ -271,7 +274,7 @@
 
   function chip(p) {
     var c = claseColor(p);
-    var t = p == null ? "—" : (Math.round(p * 10) / 10).toString().replace(/\.0$/, "") + "%";
+    var t = p == null ? "—" : Math.round(p) + "%";
     return '<span class="chip chip--' + c + '">' + t + "</span>";
   }
 
@@ -363,7 +366,7 @@
         var w = Math.max(4, Math.round(100 * p.pct / (maxP || 1)));
         return '<div class="chart__row">' +
           '<div class="chart__top"><span class="chart__label">' + p.prov + '</span>' +
-          '<b class="chart__val">' + p.pct + '%</b></div>' +
+          '<b class="chart__val">' + Math.round(p.pct) + '%</b></div>' +
           '<i class="chart__track"><i class="rank__fill rank__fill--' + claseColor(p.pct) + '" style="width:2%" data-w="' + w + '"></i></i>' +
         '</div>';
       }).join("");
@@ -381,7 +384,7 @@
   function fmtNum(n) { return String(Math.round(n || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, "."); }
   function fmtPctN(n) {
     if (n == null) return "—";
-    return (Math.round(n * 10) / 10).toString().replace(".", ",") + "%";
+    return Math.round(n) + "%";
   }
   function tarjetaCierreMes(datos) {
     var ma = datos.mesAnterior;
@@ -458,8 +461,7 @@
     // Tarjeta para llevarse la tabla en papel al momento de pagar
     var pc = el("div", "printcard reveal");
     pc.innerHTML =
-      '<div class="printcard__txt"><b>🖨️ ¿Vas a pagar los premios?</b>' +
-      '<span>Imprimí esta tabla y tenela en papel.</span></div>' +
+      '<div class="printcard__txt"><b>🖨️ Imprimí los premios</b></div>' +
       '<button class="printcard__btn" type="button">Imprimir tabla</button>';
     pc.querySelector(".printcard__btn").addEventListener("click", function () { window.print(); });
     cont.appendChild(pc);
@@ -477,7 +479,8 @@
       '<div class="rank__head"><span>#</span><span>Fletero</span>' +
       '<span class="rank__num">Rep.</span><span class="rank__num">Asist.</span>' +
       '<span class="rank__num">Entrega</span>' +
-      '<span class="rank__num">Cartón</span><span class="rank__num">Premio</span></div>';
+      '<span class="rank__num">Cartón</span><span class="rank__num">Premio</span>' +
+      '<span class="rank__firma">Firma</span></div>';
     var totalPremios = 0;
     var body = lista.map(function (f, i) {
       var medal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : (i + 1);
@@ -505,6 +508,7 @@
         '<span class="rank__num">' + chip(f.efE) + '</span>' +
         '<span class="rank__num">' + chip(f.efC) + '</span>' +
         premioHTML +
+        '<span class="rank__firma"></span>' +
       '</div>';
     }).join("");
     var cobran = lista.filter(function (f) { return f.premio > 0; }).length;
@@ -515,6 +519,7 @@
       '<span class="rank__num"></span><span class="rank__num"></span>' +
       '<span class="rank__num"></span><span class="rank__num"></span>' +
       '<span class="rank__num rank__prize">' + fmtPlata(totalPremios) + '</span>' +
+      '<span class="rank__firma"></span>' +
       '</div>';
     tabla.innerHTML =
       '<h2 class="rank__title">🏁 Así cerró ' + nombreMes + ' · ranking final</h2>' +
@@ -758,10 +763,10 @@
     }
 
     var zonas = (an.zonas || []).map(function (z) {
-      return { _l: z.nombre, _v: z.pct, _t: z.pct + "% <span class='chart__cnt'>(" + z.rech + " de " + z.sac + ")</span>" };
+      return { _l: z.nombre, _v: z.pct, _t: Math.round(z.pct) + "% <span class='chart__cnt'>(" + z.rech + " de " + z.sac + ")</span>" };
     });
     var vendedores = (an.vendedores || []).map(function (v) {
-      return { _l: v.nombre, _v: v.pct, _t: v.pct + "% <span class='chart__cnt'>(" + v.rech + " de " + v.sac + ")</span>" };
+      return { _l: v.nombre, _v: v.pct, _t: Math.round(v.pct) + "% <span class='chart__cnt'>(" + v.rech + " de " + v.sac + ")</span>" };
     });
     var clientes = (an.clientes || []).map(function (c) {
       return { _l: c.nombre + (c.loc ? " · " + c.loc : ""), _v: c.cantidad, _t: c.cantidad + " rechazos" };
@@ -776,7 +781,7 @@
 
     // % entregado por proveedor (en plata) + clientes que más rechazan
     var provs = (an.proveedores || []).map(function (p) {
-      return { _l: p.nombre, _v: p.pct, _c: claseColor(p.pct), _t: p.pct + "%" };
+      return { _l: p.nombre, _v: p.pct, _c: claseColor(p.pct), _t: Math.round(p.pct) + "%" };
     });
     var fila2 = el("div", "charts");
     var tp = tarjeta("🏭 % entregado por proveedor <span class='chart__cnt'>(en plata)</span>", provs);
