@@ -378,15 +378,86 @@ main { max-width: 1080px; margin: 0 auto; padding: 22px 20px 60px; }
 }
 .cierre__ver:hover { background: #fff; transform: translateY(-1px); }
 .rank__grid--cierre .rank__head, .rank__grid--cierre .rank__row {
-  grid-template-columns: 30px 1fr 48px 68px 68px 84px;
+  grid-template-columns: 28px 1fr 44px 62px 62px 62px 86px;
 }
+.rank__prize-ico { font-style: normal; margin-right: 3px; }
 @media (max-width: 560px) {
   .rank__grid--cierre .rank__head, .rank__grid--cierre .rank__row {
-    grid-template-columns: 22px 1fr 34px 52px 52px 60px; gap: 4px; padding: 10px 7px;
+    grid-template-columns: 20px 1fr 24px 42px 42px 42px 60px; gap: 3px; padding: 10px 6px;
   }
+  .rank__grid--cierre .chip { font-size: 10.5px; padding: 2px 4px; }
+  .rank__grid--cierre .rank__prize { font-size: 10.5px; }
+  .rank__grid--cierre .rank__head { font-size: 10px; }
+  .rank__grid--cierre .rank__pos { font-size: 13px; }
+  /* En pantalla chica el nombre usa dos renglones en vez de cortarse */
+  .rank__grid--cierre .rank__name b {
+    font-size: 12px; white-space: normal; overflow: visible; line-height: 1.15;
+  }
+  .rank__grid--cierre .rank__prize-ico { display: none; }
+  /* El total lleva 7 cifras: en pantalla chica va a lo ancho, no en columna */
+  .rank__grid--cierre .rank__row--total {
+    display: flex; justify-content: space-between; align-items: center; gap: 8px;
+  }
+  .rank__grid--cierre .rank__row--total .rank__prize { font-size: 14px; white-space: nowrap; }
 }
 .rank__row--static { cursor: default; }
 .rank__row--static:hover { background: transparent; }
+/* Fila de cierre: total a pagar */
+.rank__row--total { background: #FAF7F0; }
+.rank__row--total .rank__name b { font-size: 13.5px; letter-spacing: .02em; }
+.rank__row--total .rank__prize { font-size: 15px; }
+
+/* ---------- Tarjeta para imprimir la tabla del mes cerrado ---------- */
+.printcard {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap;
+  background: var(--paper); border: 1px solid var(--line); border-radius: var(--r);
+  box-shadow: var(--sh); padding: 14px 16px; margin-bottom: 14px;
+}
+.printcard__txt { display: flex; flex-direction: column; gap: 2px; }
+.printcard__txt b { font-size: 14.5px; }
+.printcard__txt span { font-size: 12.5px; color: var(--ink-2); }
+.printcard__btn {
+  border: none; border-radius: var(--r-sm); cursor: pointer;
+  background: var(--pine); color: #fff; padding: 11px 20px;
+  font-family: var(--font); font-size: 14px; font-weight: 800;
+  transition: background .15s ease, transform .12s ease;
+}
+.printcard__btn:hover { background: var(--pine-d); transform: translateY(-1px); }
+.printhead { display: none; }
+
+/* ---------- Impresión: solo la tabla, en blanco y negro ---------- */
+@media print {
+  @page { size: A4 portrait; margin: 12mm; }
+  body {
+    background: #fff !important; background-image: none !important; color: #000;
+  }
+  #splash, .hero, .controls, .foot, .volver, .printcard, .rank__hint,
+  .rank__track, .cierre { display: none !important; }
+  main { padding: 0 !important; }
+  .printhead { display: block; margin-bottom: 10px; color: #000; }
+  .printhead b { font-size: 15px; }
+  .printhead span { display: block; font-size: 11px; color: #444; margin-top: 2px; }
+  .rank__title { color: #000 !important; font-size: 15px; margin: 0 0 8px; }
+  .rank__grid { border: 1px solid #999; border-radius: 0; box-shadow: none; }
+  .rank__head {
+    background: #ECECEC !important; color: #000 !important; border-bottom: 1px solid #999;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .rank__row { border-bottom: 1px solid #DDD; padding: 7px 10px; page-break-inside: avoid; }
+  .rank__row--total {
+    background: #ECECEC !important; border-top: 1px solid #999;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .rank__name b { overflow: visible; white-space: normal; }
+  .chip {
+    background: none !important; color: #000 !important; border: none !important;
+    padding: 0 !important; font-weight: 700;
+  }
+  .rank__prize, .rank__prize--none { color: #000 !important; opacity: 1 !important; }
+  .rank__prize-ico { display: none; }
+  .reveal { opacity: 1 !important; transform: none !important; }
+}
 
 /* ---------- Fondo oscuro con patrón de reparto (SIEMPRE al final del archivo) ---------- */
 body {
