@@ -425,6 +425,8 @@ main { max-width: 1080px; margin: 0 auto; padding: 22px 20px 60px; }
 }
 .printcard__btn:hover { background: var(--pine-d); transform: translateY(-1px); }
 .printhead { display: none; }
+/* La columna de firma existe solo en el papel (ver @media print) */
+.rank__firma { display: none; }
 
 /* ---------- Impresión: solo la tabla, en blanco y negro ---------- */
 @media print {
@@ -449,6 +451,15 @@ main { max-width: 1080px; margin: 0 auto; padding: 22px 20px 60px; }
     background: #ECECEC !important; border-top: 1px solid #999;
     -webkit-print-color-adjust: exact; print-color-adjust: exact;
   }
+  /* En el papel aparece la columna Firma, con renglón para que firme al cobrar */
+  .rank__grid--cierre .rank__head, .rank__grid--cierre .rank__row {
+    display: grid !important;
+    grid-template-columns: 24px 1fr 38px 52px 56px 56px 76px 118px;
+    gap: 8px; align-items: center;
+  }
+  .rank__firma { display: block; }
+  .rank__row .rank__firma { border-bottom: 1px solid #666; height: 16px; }
+  .rank__row--total .rank__firma { border-bottom: none; }
   .rank__name b { overflow: visible; white-space: normal; }
   .chip {
     background: none !important; color: #000 !important; border: none !important;
