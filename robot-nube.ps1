@@ -87,6 +87,16 @@ function Cerrar-Xlsx($libro) {
 
 function EsNumero($v) { return ($null -ne $v -and [string]$v -match "^-?\d+(\.\d+)?$") }
 
+# Porcentaje SIN decimales (regla de la empresa, 20/8): de ,50 para arriba
+# redondea para arriba y de ,49 para abajo. Los premios se calculan sobre este
+# numero, asi el fletero cobra por el mismo % que ve en el panel.
+# OJO: [math]::Round por defecto redondea "al par" (88,5 -> 88 y 94,5 -> 94),
+# que NO es lo que se pidio -> hay que forzar AwayFromZero.
+function PctEntero($num, $den) {
+  if ($den -le 0) { return $null }
+  return [int][math]::Round(100.0 * $num / $den, 0, [System.MidpointRounding]::AwayFromZero)
+}
+
 # FORCE_MES=anterior -> resolver al mes CALENDARIO anterior (verificacion mensual
 # de cierre; asi el mismo workflow sirve para cualquier mes sin tocar nada).
 if ($env:FORCE_MES -eq "anterior") {
@@ -842,10 +852,10 @@ foreach ($choH in ($flAcum.Keys | Sort-Object)) {
   # de carton sin repartos (nombre sin mapear) no es un fletero rankeable.
   if ($a.rep -le 0) { continue }
   $mEA += $a.asig; $mER += $a.real; $mRep += $a.rep
-  $efEh = $null; if ($a.asig -gt 0) { $efEh = [math]::Round(100.0 * $a.real / $a.asig, 1) }
-  $efCh = $null; if ($a.sal -gt 0) { $efCh = [math]::Round(100.0 * $a.vue / $a.sal, 1) }
+  $efEh = $null; if ($a.asig -gt 0) { $efEh = PctEntero $a.real $a.asig }
+  $efCh = $null; if ($a.sal -gt 0) { $efCh = PctEntero $a.vue $a.sal }
   # Asistencia = repartos / dias habiles (tope 100%); <85% no cobra premio
-  $asistH = $null; if ($habMes -gt 0) { $asistH = [math]::Min(100, [math]::Round(100.0 * $a.rep / $habMes)) }
+  $asistH = $null; if ($habMes -gt 0) { $asistH = [math]::Min(100, (PctEntero $a.rep $habMes)) }
   $premH = 0
   if ($null -ne $asistH -and $asistH -ge 85) {
     if ($null -ne $efEh) { if ($efEh -ge 95) { $premH += 100000 } elseif ($efEh -ge 90) { $premH += 50000 } }
@@ -855,8 +865,8 @@ foreach ($choH in ($flAcum.Keys | Sort-Object)) {
   $rankArr += [PSCustomObject]@{ nombre = (NombreMostrar $choH); repartos = $a.rep; asist = $asistH; efE = $efEh; efC = $efCh; premio = $premH }
 }
 $rankArr = @($rankArr | Sort-Object { if ($null -eq $_.efE) { -1.0 } else { [double]$_.efE } } -Descending)
-$efGenH = 0.0; if ($mEA -gt 0) { $efGenH = [math]::Round(100.0 * $mER / $mEA, 1) }
-$carGenH = 0.0; if ($mCA -gt 0) { $carGenH = [math]::Round(100.0 * $mCR / $mCA, 1) }
+$efGenH = 0; if ($mEA -gt 0) { $efGenH = PctEntero $mER $mEA }
+$carGenH = 0; if ($mCA -gt 0) { $carGenH = PctEntero $mCR $mCA }
 # Clientes del mes (de statsChofer, que ya excluye no-fleteros)
 $cliSacT = 0; $cliEntT = 0
 foreach ($cho in $statsChofer.Keys) {
