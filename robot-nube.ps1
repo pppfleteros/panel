@@ -653,12 +653,22 @@ $claves = @($entregas.Keys) + @($cartones.Keys) | Sort-Object -Unique
 # Ignorar fechas futuras (Gescom trae repartos ya cargados para dias que no pasaron)
 $hoy = (Get-Date).ToString("yyyy-MM-dd")
 $claves = @($claves | Where-Object { $_.Split("|")[0] -le $hoy })
+# MODO VERIFICACION: nos quedamos con TODO el mes forzado y nada mas.
+# Sin esto pasan dos desastres (ya ocurrieron el 20/8):
+#   a) el recorte de "ultimas N fechas" de mas abajo se come el principio del
+#      mes -> la asistencia se desploma y NADIE cobra premio;
+#   b) el carton de la planilla trae tambien el mes siguiente y ensucia el total.
+if ($env:FORCE_MES) {
+  $claves = @($claves | Where-Object { $_.Split("|")[0] -like ($env:FORCE_MES + "*") })
+  if ($claves.Count -eq 0) { Log ("ERROR: no hay datos del mes " + $env:FORCE_MES); exit 1 }
+}
 $fechasTodas = @($claves | ForEach-Object { $_.Split("|")[0] } | Sort-Object -Unique)
 # Publicar las ultimas N fechas con datos: minimo 14 (para los promedios 14d)
 # y ademas todo el mes en curso (para los totales mensuales por fletero)
 $ultimaFecha = $fechasTodas[-1]
 $diaDelMes = [int]$ultimaFecha.Substring(8, 2)
 $nPublicar = [Math]::Max($DIAS_PUBLICAR, $diaDelMes)
+if ($env:FORCE_MES) { $nPublicar = $fechasTodas.Count }   # verificacion: el mes ENTERO
 $fechasPublicar = @($fechasTodas | Select-Object -Last $nPublicar)
 $claves = @($claves | Where-Object { $_.Split("|")[0] -in $fechasPublicar })
 Log ("Datos publicados: " + $fechasPublicar[0] + " a " + $fechasPublicar[-1] + " (" + $fechasPublicar.Count + " fechas)")
