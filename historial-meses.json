@@ -199,15 +199,15 @@
                     "actualizado":  "2026-08-10"
                 },
     "2026-08":  {
-                    "boletasEnt":  16979,
-                    "boletasSac":  18032,
+                    "boletasEnt":  18018,
+                    "boletasSac":  19138,
                     "efGeneral":  94,
                     "fleteros":  25,
-                    "clientesEnt":  9301,
+                    "clientesEnt":  9895,
                     "cartonGeneral":  59,
-                    "clientesSac":  9644,
-                    "repartos":  383,
-                    "premiosTotal":  500000,
+                    "clientesSac":  10257,
+                    "repartos":  408,
+                    "premiosTotal":  1400000,
                     "ranking":  [
                                     {
                                         "nombre":  "Jonathan Pinazo",
@@ -219,17 +219,17 @@
                                     },
                                     {
                                         "nombre":  "Daniel Mendoza",
-                                        "repartos":  15,
-                                        "asist":  71,
+                                        "repartos":  16,
+                                        "asist":  76,
                                         "efE":  98,
                                         "efC":  39,
                                         "premio":  0
                                     },
                                     {
                                         "nombre":  "Sergio Gasc",
-                                        "repartos":  3,
-                                        "asist":  14,
-                                        "efE":  97,
+                                        "repartos":  4,
+                                        "asist":  19,
+                                        "efE":  98,
                                         "efC":  null,
                                         "premio":  0
                                     },
@@ -242,175 +242,175 @@
                                         "premio":  0
                                     },
                                     {
-                                        "nombre":  "Lucas Matias Rodriguez",
+                                        "nombre":  "Ariel Riveros",
                                         "repartos":  18,
                                         "asist":  86,
                                         "efE":  96,
-                                        "efC":  70,
-                                        "premio":  200000
-                                    },
-                                    {
-                                        "nombre":  "Ariel Riveros",
-                                        "repartos":  17,
-                                        "asist":  81,
-                                        "efE":  96,
                                         "efC":  60,
-                                        "premio":  0
+                                        "premio":  150000
                                     },
                                     {
                                         "nombre":  "Pablo Moyano",
-                                        "repartos":  16,
-                                        "asist":  76,
+                                        "repartos":  17,
+                                        "asist":  81,
                                         "efE":  96,
                                         "efC":  76,
-                                        "premio":  0
-                                    },
-                                    {
-                                        "nombre":  "Carlos Crespo",
-                                        "repartos":  16,
-                                        "asist":  76,
-                                        "efE":  96,
-                                        "efC":  71,
-                                        "premio":  0
-                                    },
-                                    {
-                                        "nombre":  "Javier Sotelo",
-                                        "repartos":  20,
-                                        "asist":  95,
-                                        "efE":  95,
-                                        "efC":  40,
-                                        "premio":  100000
-                                    },
-                                    {
-                                        "nombre":  "Leandro Sanchez",
-                                        "repartos":  17,
-                                        "asist":  81,
-                                        "efE":  95,
-                                        "efC":  69,
-                                        "premio":  0
-                                    },
-                                    {
-                                        "nombre":  "David Alvarez",
-                                        "repartos":  15,
-                                        "asist":  71,
-                                        "efE":  95,
-                                        "efC":  78,
-                                        "premio":  0
-                                    },
-                                    {
-                                        "nombre":  "Nicolas Oviedo",
-                                        "repartos":  17,
-                                        "asist":  81,
-                                        "efE":  95,
-                                        "efC":  33,
                                         "premio":  0
                                     },
                                     {
                                         "nombre":  "Hector Roldan",
                                         "repartos":  16,
                                         "asist":  76,
-                                        "efE":  95,
+                                        "efE":  96,
                                         "efC":  70,
                                         "premio":  0
                                     },
                                     {
-                                        "nombre":  "Guillermo Guzman",
+                                        "nombre":  "Carlos Crespo",
                                         "repartos":  17,
                                         "asist":  81,
+                                        "efE":  96,
+                                        "efC":  71,
+                                        "premio":  0
+                                    },
+                                    {
+                                        "nombre":  "Lucas Matias Rodriguez",
+                                        "repartos":  18,
+                                        "asist":  86,
+                                        "efE":  95,
+                                        "efC":  70,
+                                        "premio":  200000
+                                    },
+                                    {
+                                        "nombre":  "Nicolas Oviedo",
+                                        "repartos":  18,
+                                        "asist":  86,
+                                        "efE":  95,
+                                        "efC":  33,
+                                        "premio":  100000
+                                    },
+                                    {
+                                        "nombre":  "Javier Sotelo",
+                                        "repartos":  22,
+                                        "asist":  100,
+                                        "efE":  95,
+                                        "efC":  40,
+                                        "premio":  100000
+                                    },
+                                    {
+                                        "nombre":  "Guillermo Guzman",
+                                        "repartos":  18,
+                                        "asist":  86,
                                         "efE":  95,
                                         "efC":  87,
-                                        "premio":  0
+                                        "premio":  250000
                                     },
                                     {
-                                        "nombre":  "Julio Moran",
-                                        "repartos":  17,
-                                        "asist":  81,
+                                        "nombre":  "David Alvarez",
+                                        "repartos":  16,
+                                        "asist":  76,
                                         "efE":  94,
-                                        "efC":  79,
-                                        "premio":  0
-                                    },
-                                    {
-                                        "nombre":  "Alan Perez",
-                                        "repartos":  12,
-                                        "asist":  57,
-                                        "efE":  93,
-                                        "efC":  51,
-                                        "premio":  0
-                                    },
-                                    {
-                                        "nombre":  "Rodrigo Calo",
-                                        "repartos":  17,
-                                        "asist":  81,
-                                        "efE":  93,
-                                        "efC":  63,
-                                        "premio":  0
-                                    },
-                                    {
-                                        "nombre":  "Norberto Vera",
-                                        "repartos":  5,
-                                        "asist":  24,
-                                        "efE":  93,
-                                        "efC":  null,
+                                        "efC":  78,
                                         "premio":  0
                                     },
                                     {
                                         "nombre":  "Cristian Carrizo",
-                                        "repartos":  16,
-                                        "asist":  76,
-                                        "efE":  93,
+                                        "repartos":  19,
+                                        "asist":  90,
+                                        "efE":  94,
                                         "efC":  36,
-                                        "premio":  0
-                                    },
-                                    {
-                                        "nombre":  "Claudio Ponce",
-                                        "repartos":  26,
-                                        "asist":  100,
-                                        "efE":  92,
-                                        "efC":  null,
                                         "premio":  50000
                                     },
                                     {
+                                        "nombre":  "Leandro Sanchez",
+                                        "repartos":  18,
+                                        "asist":  86,
+                                        "efE":  94,
+                                        "efC":  69,
+                                        "premio":  100000
+                                    },
+                                    {
+                                        "nombre":  "Rodrigo Calo",
+                                        "repartos":  18,
+                                        "asist":  86,
+                                        "efE":  93,
+                                        "efC":  63,
+                                        "premio":  100000
+                                    },
+                                    {
+                                        "nombre":  "Norberto Vera",
+                                        "repartos":  6,
+                                        "asist":  29,
+                                        "efE":  93,
+                                        "efC":  null,
+                                        "premio":  0
+                                    },
+                                    {
+                                        "nombre":  "Julio Moran",
+                                        "repartos":  18,
+                                        "asist":  86,
+                                        "efE":  93,
+                                        "efC":  79,
+                                        "premio":  150000
+                                    },
+                                    {
                                         "nombre":  "Gabriel Flores",
-                                        "repartos":  20,
-                                        "asist":  95,
+                                        "repartos":  21,
+                                        "asist":  100,
                                         "efE":  92,
                                         "efC":  66,
                                         "premio":  100000
                                     },
                                     {
-                                        "nombre":  "Ruben Salvatierra",
-                                        "repartos":  26,
+                                        "nombre":  "Claudio Ponce",
+                                        "repartos":  28,
                                         "asist":  100,
-                                        "efE":  91,
+                                        "efE":  92,
                                         "efC":  null,
                                         "premio":  50000
                                     },
                                     {
+                                        "nombre":  "Ruben Salvatierra",
+                                        "repartos":  28,
+                                        "asist":  100,
+                                        "efE":  92,
+                                        "efC":  null,
+                                        "premio":  50000
+                                    },
+                                    {
+                                        "nombre":  "Alan Perez",
+                                        "repartos":  13,
+                                        "asist":  62,
+                                        "efE":  92,
+                                        "efC":  51,
+                                        "premio":  0
+                                    },
+                                    {
                                         "nombre":  "Lucas Calvo",
-                                        "repartos":  15,
-                                        "asist":  71,
+                                        "repartos":  16,
+                                        "asist":  76,
                                         "efE":  91,
                                         "efC":  24,
+                                        "premio":  0
+                                    },
+                                    {
+                                        "nombre":  "Maximiliano Pinazo",
+                                        "repartos":  16,
+                                        "asist":  76,
+                                        "efE":  88,
+                                        "efC":  30,
                                         "premio":  0
                                     },
                                     {
                                         "nombre":  "Lucas Guiering",
                                         "repartos":  10,
                                         "asist":  48,
-                                        "efE":  88,
-                                        "efC":  33,
-                                        "premio":  0
-                                    },
-                                    {
-                                        "nombre":  "Maximiliano Pinazo",
-                                        "repartos":  15,
-                                        "asist":  71,
                                         "efE":  87,
-                                        "efC":  30,
+                                        "efC":  33,
                                         "premio":  0
                                     }
                                 ],
-                    "plataRech":  58171553,
-                    "actualizado":  "2026-08-25"
+                    "plataRech":  61345584,
+                    "actualizado":  "2026-08-26"
                 }
 }
