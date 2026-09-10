@@ -199,14 +199,14 @@
                     "actualizado":  "2026-08-10"
                 },
     "2026-08":  {
-                    "boletasEnt":  20940,
-                    "boletasSac":  22291,
+                    "boletasEnt":  20925,
+                    "boletasSac":  22289,
                     "efGeneral":  94,
                     "fleteros":  24,
-                    "clientesEnt":  11643,
+                    "clientesEnt":  11639,
                     "cartonGeneral":  59,
-                    "clientesSac":  12082,
-                    "repartos":  485,
+                    "clientesSac":  12083,
+                    "repartos":  486,
                     "premiosTotal":  2300000,
                     "ranking":  [
                                     {
@@ -219,9 +219,9 @@
                                     },
                                     {
                                         "nombre":  "Sergio Gasc",
-                                        "repartos":  6,
-                                        "asist":  29,
-                                        "efE":  97,
+                                        "repartos":  7,
+                                        "asist":  33,
+                                        "efE":  98,
                                         "efC":  null,
                                         "premio":  0
                                     },
@@ -235,7 +235,7 @@
                                     },
                                     {
                                         "nombre":  "Guillermo Guzman",
-                                        "repartos":  23,
+                                        "repartos":  24,
                                         "asist":  100,
                                         "efE":  96,
                                         "efC":  87,
@@ -243,8 +243,8 @@
                                     },
                                     {
                                         "nombre":  "Carlos Crespo",
-                                        "repartos":  20,
-                                        "asist":  95,
+                                        "repartos":  21,
+                                        "asist":  100,
                                         "efE":  96,
                                         "efC":  71,
                                         "premio":  200000
@@ -315,7 +315,7 @@
                                     },
                                     {
                                         "nombre":  "Javier Sotelo",
-                                        "repartos":  26,
+                                        "repartos":  25,
                                         "asist":  100,
                                         "efE":  94,
                                         "efC":  40,
@@ -323,8 +323,8 @@
                                     },
                                     {
                                         "nombre":  "Norberto Vera",
-                                        "repartos":  8,
-                                        "asist":  38,
+                                        "repartos":  7,
+                                        "asist":  33,
                                         "efE":  93,
                                         "efC":  null,
                                         "premio":  0
@@ -389,7 +389,7 @@
                                         "nombre":  "Maximiliano Pinazo",
                                         "repartos":  20,
                                         "asist":  95,
-                                        "efE":  89,
+                                        "efE":  88,
                                         "efC":  30,
                                         "premio":  0
                                     },
@@ -402,8 +402,8 @@
                                         "premio":  0
                                     }
                                 ],
-                    "plataRech":  73025817,
-                    "actualizado":  "2026-08-31"
+                    "plataRech":  73197199,
+                    "actualizado":  "2026-09-10"
                 },
     "2026-09":  {
                     "boletasEnt":  5440,
