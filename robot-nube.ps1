@@ -112,6 +112,21 @@ function DiaPreventaDe($fechaIso) {
   return $DIAS_SEM[[int]$ant.DayOfWeek]
 }
 
+# MANDA EL NUMERO DE RUTA, no la fecha (definicion de Lucas: "salio ruta 400, son
+# clientes de jueves"). Las rutas salen numeradas por dia: 1xx martes, 2xx
+# miercoles, 3xx jueves, 4xx viernes, 5xx lunes; y cada una lleva la preventa del
+# dia habil anterior a su dia -> 1xx lunes, 2xx martes, 3xx miercoles, 4xx jueves,
+# 5xx viernes. Se mide por ruta porque la empresa a veces adelanta o atrasa una
+# jornada (el martes 1/9 salieron juntas las 1xx y las 2xx) y el fletero no tiene
+# que salir penalizado por eso. Las rutas sin numero (EXHIBIDORES, 950 RETIRA EN
+# DEPOSITO) caen a la regla por fecha.
+$DIA_DE_RUTA = @{ "1" = "lunes"; "2" = "martes"; "3" = "miercoles"; "4" = "jueves"; "5" = "viernes" }
+function DiaEsperadoDe($ruta, $fechaIso) {
+  $r = ([string]$ruta).Trim()
+  if ($r -match "^([1-5])[0-9][0-9]$") { return $DIA_DE_RUTA[$matches[1]] }
+  return DiaPreventaDe $fechaIso
+}
+
 # FORCE_MES=anterior -> resolver al mes CALENDARIO anterior (verificacion mensual
 # de cierre; asi el mismo workflow sirve para cualquier mes sin tocar nada).
 if ($env:FORCE_MES -eq "anterior") {
@@ -467,7 +482,7 @@ try {
     # Los que no tienen ninguna ruta de preventa cargada en Gescom NO se cuentan
     # como fuera de ruta (es un dato que falta en el sistema, no una desviacion
     # del fletero), pero si se informan aparte.
-    $diaEsperado = DiaPreventaDe $fechaR
+    $diaEsperado = DiaEsperadoDe $rp.descripcion $fechaR
     $cliR = 0; $fdrR = 0; $sinRutaR = 0
     foreach ($cc in @($rp.clientes)) {
       $cliR++
