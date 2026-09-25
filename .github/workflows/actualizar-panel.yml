@@ -57,8 +57,24 @@ jobs:
           git diff --cached --quiet
           if ($LASTEXITCODE -ne 0) {
             git commit -m ("Datos del " + (Get-Date -Format "dd/MM/yyyy HH:mm"))
-            git push
-            Write-Output "Publicado en GitHub Pages"
+            # Si mientras el robot bajaba los datos alguien publico otra cosa en el
+            # repo, el push directo se rechaza y se pierde la bajada entera (paso el
+            # 25/9). Reintentamos trayendo lo de afuera y poniendo nuestro commit
+            # arriba: los datos son archivos que solo escribe el robot, no chocan.
+            $ok = $false
+            foreach ($intento in 1..3) {
+              git push
+              if ($LASTEXITCODE -eq 0) { $ok = $true; break }
+              Write-Output ("Push rechazado (intento " + $intento + "): traigo los cambios de afuera y reintento")
+              git pull --rebase origin main
+              if ($LASTEXITCODE -ne 0) { Write-Output "ERROR: no pude unir los cambios de afuera"; break }
+            }
+            if ($ok) {
+              Write-Output "Publicado en GitHub Pages"
+            } else {
+              Write-Output "ERROR: no se pudo publicar (los datos bajados se pierden; volver a correr)"
+              exit 1
+            }
           } else {
             Write-Output "Datos sin cambios: no hace falta publicar"
           }

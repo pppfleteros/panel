@@ -71,8 +71,22 @@ jobs:
           git diff --cached --quiet
           if ($LASTEXITCODE -ne 0) {
             git commit -m "Verificacion del cierre de mes"
-            git push
-            Write-Output "Verificacion publicada"
+            # Ver la nota del workflow "Actualizar panel": si alguien publico en el
+            # repo mientras corriamos, el push se rechaza y se pierde la bajada.
+            $ok = $false
+            foreach ($intento in 1..3) {
+              git push
+              if ($LASTEXITCODE -eq 0) { $ok = $true; break }
+              Write-Output ("Push rechazado (intento " + $intento + "): traigo los cambios de afuera y reintento")
+              git pull --rebase origin main
+              if ($LASTEXITCODE -ne 0) { Write-Output "ERROR: no pude unir los cambios de afuera"; break }
+            }
+            if ($ok) {
+              Write-Output "Verificacion publicada"
+            } else {
+              Write-Output "ERROR: no se pudo publicar la verificacion"
+              exit 1
+            }
           } else {
             Write-Output "Sin cambios que publicar"
           }
