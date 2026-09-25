@@ -26,7 +26,8 @@ $DIAS_PUBLICAR = 14    # fechas con datos que se publican en la web
 # Filas que no van a la web (no-fleteros y excluidos a pedido de Lucas)
 $EXCLUIR = @("SIN CHOFER", "RETIRA EN DEPOSITO",
              "LEANDRO BENITEZ", "MARCELO VACA", "GONZALO CALO", "EZEQUIEL HEREDIA",
-             "CARLOS GUILLERMO ESCUDERO", "GABRIEL MAYMO", "SEMI JORGE")
+             "GABRIEL MAYMO", "SEMI JORGE",
+             "MARTIN EDUARDO NAVARRO")   # 25/9: ya no es fletero (CARLOS GUILLERMO ESCUDERO volvio y sale de la lista)
 
 function Log($msg) {
   Write-Output ((Get-Date -Format "yyyy-MM-dd HH:mm:ss") + "  " + $msg)
