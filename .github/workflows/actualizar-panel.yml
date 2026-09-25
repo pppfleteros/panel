@@ -53,6 +53,7 @@ jobs:
           git config user.name "robot-ppp"
           git config user.email "robot-ppp@users.noreply.github.com"
           git add data.js historial-meses.json
+          git add meses
           git diff --cached --quiet
           if ($LASTEXITCODE -ne 0) {
             git commit -m ("Datos del " + (Get-Date -Format "dd/MM/yyyy HH:mm"))

@@ -33,3 +33,6 @@ Ezequiel H = EZEQUIEL HEREDIA
 Marcelo V = MARCELO VACA
 Gonzalo C = GONZALO CALO
 Leandro B = LEANDRO BENITEZ
+
+# Nombres mal escritos en la planilla de carton (25/09)
+Javier S = JAVIER SOTELO

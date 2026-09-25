@@ -97,6 +97,20 @@ function PctEntero($num, $den) {
   return [int][math]::Round(100.0 * $num / $den, 0, [System.MidpointRounding]::AwayFromZero)
 }
 
+# --- FUERA DE RUTA -----------------------------------------------------------
+# Cada cliente tiene en Gescom su/s ruta/s de preventa con banderas por dia
+# (lunes..domingo). La preventa de un dia se REPARTE AL DIA HABIL SIGUIENTE:
+# verificado sobre la semana 21-26/9 (reparto viernes -> clientes del jueves 476
+# contra 104 de otros dias; lunes -> viernes 388; martes -> lunes 390; miercoles
+# -> martes 442; jueves -> miercoles 495). Entonces, para un reparto del dia D,
+# el cliente esta EN RUTA si su preventa cae el dia habil anterior a D.
+$DIAS_SEM = @("domingo", "lunes", "martes", "miercoles", "jueves", "viernes", "sabado")
+function DiaPreventaDe($fechaIso) {
+  $ant = ([DateTime]$fechaIso).AddDays(-1)
+  while ([int]$ant.DayOfWeek -eq 0 -or [int]$ant.DayOfWeek -eq 6) { $ant = $ant.AddDays(-1) }
+  return $DIAS_SEM[[int]$ant.DayOfWeek]
+}
+
 # FORCE_MES=anterior -> resolver al mes CALENDARIO anterior (verificacion mensual
 # de cierre; asi el mismo workflow sirve para cualquier mes sin tocar nada).
 if ($env:FORCE_MES -eq "anterior") {
@@ -209,10 +223,21 @@ try {
     $nomProv[[string]$x.codigo] = ([string]$x.nombre).Trim()
   }
   $resp = Get-Gescom "ventas/api/v1/get-clientes"
-  $cliLoc = @{}; $cliRaz = @{}
+  $cliLoc = @{}; $cliRaz = @{}; $diasPreventa = @{}
   foreach ($x in @($resp)) {
     $cliLoc[[string]$x.codigo] = ([string]$x.localidad).Trim().ToUpper()
     $cliRaz[[string]$x.codigo] = ([string]$x.razonSocial).Trim()
+    # Dias de preventa del cliente (para FUERA DE RUTA). Cada rutasPreventa trae
+    # banderas lunes..domingo; un cliente puede tener mas de una ruta -> union.
+    $setD = @{}
+    foreach ($rr in @($x.rutasPreventa)) {
+      if ($null -eq $rr) { continue }
+      foreach ($dd in $DIAS_SEM) {
+        $vv = $null; try { $vv = $rr.$dd } catch { }
+        if ($vv -eq $true) { $setD[$dd] = $true }
+      }
+    }
+    if ($setD.Count -gt 0) { $diasPreventa[[string]$x.codigo] = $setD }
   }
   $resp = Get-Gescom "inventario/api/v2/get-articulos"
   $provArt = @{}
@@ -280,8 +305,22 @@ try {
               $unidRechV += [math]::Abs([double]$it.cantidad) * $facU
             }
           }
+          # Unidades e importe de la VENTA (para "unidades entregadas" y "% de
+          # rechazo en $" por dia). Se guardan aca para que TODOS los indicadores
+          # del dia salgan de la misma fuente: el reparto.
+          $unidVenV = 0.0
+          if ($tipoV -eq "VEN") {
+            foreach ($it in $v.items) {
+              $facU = 1.0
+              if ($null -ne $it.unidadFactor -and [double]$it.unidadFactor -gt 0) { $facU = [double]$it.unidadFactor }
+              $unidVenV += [math]::Abs([double]$it.cantidad) * $facU
+            }
+          }
+          $impV2 = 0.0
+          foreach ($it in $v.items) { $impV2 += [math]::Abs([double]$it.importeTotal) }
           [void]$repAcum[$crV].Add(@{ tipo = $tipoV; vd = ($v.ventaDirecta -eq $true)
-                                      fp = ([string]$v.fechaPedido).Substring(0, 10); unidRech = $unidRechV })
+                                      fp = ([string]$v.fechaPedido).Substring(0, 10); unidRech = $unidRechV
+                                      unidVen = $unidVenV; imp = $impV2 })
         }
         if ($tipoV -ne "VEN" -and $tipoV -ne "DEV-RE") { continue }   # canjes y demas NO cuentan
         $esVenta = ($tipoV -eq "VEN")
@@ -409,25 +448,50 @@ try {
     $lista = $repAcum[$crR]
     if (-not $lista) { continue }
     $asigR = 0; $rechR = 0; $itemsR = 0.0
+    $unidVenR = 0.0; $impFactR = 0.0; $impRechR = 0.0
     foreach ($mv in $lista) {
       if ($mv.tipo -eq "DEV-RE") {
         if ($mv.fp -lt $fechaR) { $asigR++ }                    # devolucion precargada: cuenta como venta
-        else { $rechR++; $itemsR += $mv.unidRech }              # nota del reparto: rechazo
+        else {                                                  # nota del reparto: rechazo
+          $rechR++; $itemsR += $mv.unidRech; $impRechR += $mv.imp
+        }
       } elseif ($mv.tipo -eq "VEN") {
-        if (-not $mv.vd) { $asigR++ }                           # las "ventas directas" no cuentan
+        if (-not $mv.vd) { $asigR++; $unidVenR += $mv.unidVen; $impFactR += $mv.imp }
       } else {
         $asigR++                                                # canje DEV-CA
       }
     }
     if ($asigR -le 0) { continue }
+    # --- FUERA DE RUTA: clientes del viaje que no son del dia que corresponde ---
+    # Los que no tienen ninguna ruta de preventa cargada en Gescom NO se cuentan
+    # como fuera de ruta (es un dato que falta en el sistema, no una desviacion
+    # del fletero), pero si se informan aparte.
+    $diaEsperado = DiaPreventaDe $fechaR
+    $cliR = 0; $fdrR = 0; $sinRutaR = 0
+    foreach ($cc in @($rp.clientes)) {
+      $cliR++
+      $kc = [string]$cc
+      if (-not $diasPreventa.ContainsKey($kc)) { $sinRutaR++; continue }
+      if (-not $diasPreventa[$kc].ContainsKey($diaEsperado)) { $fdrR++ }
+    }
     if (-not $repartosCho[$choR]) { $repartosCho[$choR] = 0 }
     $repartosCho[$choR]++
     $claveR = "$fechaR|$choR"
-    if (-not $entregas[$claveR]) { $entregas[$claveR] = @{ asig = 0; real = 0; itemsRech = 0; rep = 0 } }
+    if (-not $entregas[$claveR]) {
+      $entregas[$claveR] = @{ asig = 0; real = 0; itemsRech = 0; rep = 0
+                              cli = 0; fdr = 0; sinRuta = 0; unidEnt = 0; impFact = 0.0; impRech = 0.0 }
+    }
     $entregas[$claveR].rep += 1
     $entregas[$claveR].asig += $asigR
     $entregas[$claveR].real += [math]::Max(0, $asigR - $rechR)
     $entregas[$claveR].itemsRech += [int][math]::Round($itemsR)
+    $entregas[$claveR].cli += $cliR
+    $entregas[$claveR].fdr += $fdrR
+    $entregas[$claveR].sinRuta += $sinRutaR
+    # Unidades ENTREGADAS = las vendidas menos las que volvieron rechazadas
+    $entregas[$claveR].unidEnt += [int][math]::Round([math]::Max(0, $unidVenR - $itemsR))
+    $entregas[$claveR].impFact += $impFactR
+    $entregas[$claveR].impRech += $impRechR
   }
   $choferesGescom = @($entregas.Keys | ForEach-Object { $_.Split("|")[1] } | Sort-Object -Unique)
   Log ("Efectividad API OK: " + $repartosMes.Count + " repartos del mes -> " + $entregas.Count +
@@ -682,19 +746,34 @@ $sb = New-Object System.Text.StringBuilder
 [void]$sb.AppendLine("  diasHistorial: 14")
 [void]$sb.AppendLine("};")
 [void]$sb.AppendLine("window.__PPP_DATA__ = { registros: [")
+# Los registros del mes en curso se guardan ademas en meses\<mes>.json, para que
+# el detalle del fletero pueda mostrar meses ya cerrados (pedido de Lucas 25/9).
+$mesArchivo = $ultimaFecha.Substring(0, 7)
+$regsDelMes = New-Object System.Collections.ArrayList
 $primero = $true
 foreach ($clave in $claves) {
   $p = $clave.Split("|"); $fecha = $p[0]; $chofer = $p[1]
   if ($chofer -in $EXCLUIR) { continue }
   $e = $entregas[$clave]; $c = $cartones[$clave]
   $ea = 0; $er = 0; $ca = 0; $cr = 0; $nrep = 0
-  if ($e) { $ea = $e.asig; $er = $e.real; if ($e.rep) { $nrep = $e.rep } }
+  $nCli = 0; $nFdr = 0; $nSinR = 0; $nUnid = 0; $nFact = 0; $nRech = 0
+  if ($e) {
+    $ea = $e.asig; $er = $e.real; if ($e.rep) { $nrep = $e.rep }
+    if ($e.cli) { $nCli = $e.cli }
+    if ($e.fdr) { $nFdr = $e.fdr }
+    if ($e.sinRuta) { $nSinR = $e.sinRuta }
+    if ($e.unidEnt) { $nUnid = $e.unidEnt }
+    if ($e.impFact) { $nFact = [long][math]::Round($e.impFact) }
+    if ($e.impRech) { $nRech = [long][math]::Round($e.impRech) }
+  }
   if ($c) { $ca = $c.sal; $cr = $c.vue }
   # Nombre para mostrar: "Carlos Crespo" en vez de "CARLOS CRESPO"
   $mostrar = (($chofer.ToLower() -split "\s+") | ForEach-Object { if ($_.Length -gt 0) { $_.Substring(0,1).ToUpper() + $_.Substring(1) } }) -join " "
   $coma = ","; if ($primero) { $coma = " "; $primero = $false }
-  $json = '{"fecha":"' + $fecha + '","fletero":"' + $mostrar + '","zona":"","repartos":' + $nrep + ',"entregas_asignadas":' + $ea + ',"entregas_realizadas":' + $er + ',"cartones_a_retornar":' + $ca + ',"cartones_retornados":' + $cr + '}'
+  $json = '{"fecha":"' + $fecha + '","fletero":"' + $mostrar + '","zona":"","repartos":' + $nrep + ',"entregas_asignadas":' + $ea + ',"entregas_realizadas":' + $er + ',"cartones_a_retornar":' + $ca + ',"cartones_retornados":' + $cr +
+    ',"clientes":' + $nCli + ',"fuera_ruta":' + $nFdr + ',"sin_ruta":' + $nSinR + ',"unidades_entregadas":' + $nUnid + ',"plata_facturada":' + $nFact + ',"plata_rechazada":' + $nRech + '}'
   [void]$sb.AppendLine($coma + $json)
+  if ($fecha -like ($mesArchivo + "*")) { [void]$regsDelMes.Add($json) }
 }
 [void]$sb.AppendLine("] };")
 # Motivos de rechazo (ordenados de mas a menos frecuente)
@@ -821,6 +900,23 @@ if ($maH -and $null -ne $maH.ranking) {
 }
 
 $utf8 = New-Object System.Text.UTF8Encoding($false)
+
+# --- Archivo del mes: detalle diario por fletero, para consultar meses cerrados ---
+# Se reescribe completo en cada corrida del mes en curso; cuando cambia el mes,
+# el archivo del mes anterior queda tal cual (ya cerrado) y se suma a la lista.
+$dirMeses = Join-Path $RAIZ "meses"
+if (-not (Test-Path $dirMeses)) { [void](New-Item -ItemType Directory -Force $dirMeses) }
+if ($regsDelMes.Count -gt 0) {
+  $jm = '{"mes":"' + $mesArchivo + '","actualizado":"' + (Get-Date -Format "yyyy-MM-dd HH:mm") + '","registros":[' + ($regsDelMes -join ",") + ']}'
+  [System.IO.File]::WriteAllText((Join-Path $dirMeses ($mesArchivo + ".json")), $jm, $utf8)
+  Log ("Archivo del mes guardado: meses/" + $mesArchivo + ".json (" + $regsDelMes.Count + " registros dia/fletero)")
+}
+# Lista de meses disponibles (los que tengan archivo), para el selector de la web
+$mesesDisp = @(Get-ChildItem $dirMeses -Filter "*.json" -ErrorAction SilentlyContinue |
+  ForEach-Object { $_.BaseName } | Where-Object { $_ -match '^\d{4}-\d{2}$' } | Sort-Object -Descending)
+[void]$sb.AppendLine("window.__PPP_DATA__.mesesDisponibles = [" +
+  (@($mesesDisp | ForEach-Object { '"' + $_ + '"' }) -join ",") + "];")
+
 [System.IO.File]::WriteAllText((Join-Path $RAIZ "data.js"), $sb.ToString(), $utf8)
 Log "data.js generado"
 

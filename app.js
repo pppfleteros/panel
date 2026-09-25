@@ -278,6 +278,83 @@
     return '<span class="chip chip--' + c + '">' + t + "</span>";
   }
 
+  // ---- Indicadores del fletero, día por día ------------------------------
+  // Cada tarjeta muestra el total del mes y cómo le fue CADA DÍA.
+  var INDICADORES = [
+    { k: "efE",    t: "Efectividad de entrega", c: "Entrega",       u: "%", bueno: "alto" },
+    { k: "carton", t: "Retorno de cartón",      c: "Cartón",        u: "%", bueno: "alto" },
+    { k: "rech",   t: "Rechazos en plata",      c: "Rechazos ($)",  u: "%", bueno: "bajo" },
+    { k: "fdr",    t: "Fuera de ruta",          c: "Fuera de ruta", u: "%", bueno: "bajo" },
+    { k: "unid",   t: "Unidades entregadas",    c: "Unidades",      u: "n" },
+    { k: "cli",    t: "Clientes del día",       c: "Clientes",      u: "n" }
+  ];
+
+  function valorDia(r, k) {
+    if (k === "efE") return r.entregas_asignadas > 0 ? 100 * r.entregas_realizadas / r.entregas_asignadas : null;
+    if (k === "carton") return r.cartones_a_retornar > 0 ? 100 * r.cartones_retornados / r.cartones_a_retornar : null;
+    if (k === "rech") return r.plata_facturada > 0 ? 100 * (r.plata_rechazada || 0) / r.plata_facturada : null;
+    if (k === "fdr") return r.clientes > 0 ? 100 * (r.fuera_ruta || 0) / r.clientes : null;
+    if (k === "unid") return r.unidades_entregadas != null ? r.unidades_entregadas : null;
+    if (k === "cli") return r.clientes != null ? r.clientes : null;
+    return null;
+  }
+
+  // En rechazos y fuera de ruta, MÁS es PEOR: el color va al revés.
+  function colorInd(v, ind) {
+    if (v == null) return "n";
+    if (ind.u !== "%") return "ok";
+    if (ind.bueno === "bajo") { return v <= 5 ? "ok" : (v <= 15 ? "mid" : "low"); }
+    return claseColor(v);
+  }
+
+  var DIAS_CORTO = ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"];
+
+  // Una tarjeta POR DÍA de reparto, con los 6 indicadores adentro.
+  function tarjetaDia(r) {
+    var box = el("div", "dia");
+    var d = new Date(r.fecha + "T00:00:00");
+    var fTxt = DIAS_CORTO[d.getDay()] + " " + r.fecha.slice(8) + "/" + r.fecha.slice(5, 7);
+    var reps = r.repartos || 0;
+    box.appendChild(el("div", "dia__cab",
+      '<span class="dia__fecha">' + fTxt + '</span>' +
+      (reps > 1 ? '<span class="dia__rep">' + reps + ' repartos</span>' : '')));
+    var filas = INDICADORES.map(function (ind) {
+      var v = valorDia(r, ind.k);
+      var txt = v == null ? "—" : (ind.u === "%" ? Math.round(v) + "%" : fmtNum(v));
+      return '<div class="ind"><span class="ind__k">' + ind.c + '</span>' +
+        '<b class="ind__v ind__v--' + colorInd(v, ind) + '">' + txt + '</b></div>';
+    }).join("");
+    box.appendChild(el("div", "dia__ind", filas));
+    return box;
+  }
+
+  // Registros del fletero para el mes elegido (el actual sale de data.js; los
+  // cerrados se bajan de meses/<mes>.json cuando hacen falta).
+  function regsDelMesElegido(datos, nombre, mesPrefijo) {
+    if (!STATE.mesDetalle || STATE.mesDetalle === mesPrefijo) {
+      var g = datos.porFletero[nombre];
+      return g ? g.regs.filter(function (r) { return r.fecha.indexOf(mesPrefijo) === 0; }) : [];
+    }
+    var lista = STATE.cacheMeses[STATE.mesDetalle];
+    if (!lista) return null;   // null = todavía cargando
+    return lista.filter(function (r) { return r.fletero === nombre; })
+      .sort(function (a, b) { return a.fecha < b.fecha ? -1 : 1; });
+  }
+
+  function verMesDetalle(mes, mesActual) {
+    STATE.mesDetalle = mes;
+    if (!mes || mes === mesActual || STATE.cacheMeses[mes]) { render(); return; }
+    render();   // muestra "cargando"
+    fetch("meses/" + mes + ".json?cb=" + Date.now(), { cache: "no-store" })
+      .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+      .then(function (j) { STATE.cacheMeses[mes] = j.registros || []; render(); })
+      .catch(function (e) {
+        console.warn("[PPP] No pude leer el mes " + mes, e);
+        STATE.cacheMeses[mes] = [];
+        render();
+      });
+  }
+
   // ---- Vistas -----------------------------------------------------------
   function vistaFletero(datos, nombre) {
     var g = datos.porFletero[nombre];
@@ -334,6 +411,46 @@
     sparks.appendChild(miniBarras(g.regs, "E", "Entrega · últimos días"));
     sparks.appendChild(miniBarras(g.regs, "R", "Cartón · últimos días"));
     cont.appendChild(sparks);
+
+    // ---- Indicadores día por día (con selector de mes) ----
+    var meses = (window.__PPP_DATA__ && window.__PPP_DATA__.mesesDisponibles) || [];
+    var mesElegido = STATE.mesDetalle || mesPrefijo;
+    var cabIndic = el("div", "diahead reveal");
+    var nomMesEl = NOMBRES_MES[parseInt(mesElegido.slice(5), 10) - 1] || "";
+    var opts = "";
+    if (meses.indexOf(mesPrefijo) < 0) { meses = [mesPrefijo].concat(meses); }
+    meses.forEach(function (m) {
+      var nm = (NOMBRES_MES[parseInt(m.slice(5), 10) - 1] || m) + " " + m.slice(0, 4);
+      opts += '<option value="' + m + '"' + (m === mesElegido ? " selected" : "") + '>' + nm + '</option>';
+    });
+    cabIndic.innerHTML =
+      '<h2 class="diahead__t">📅 Cómo le fue cada día · ' + nomMesEl + '</h2>' +
+      (meses.length > 1 ? '<select class="diahead__sel" aria-label="Elegí el mes">' + opts + '</select>' : '');
+    cont.appendChild(cabIndic);
+    var selMes = cabIndic.querySelector(".diahead__sel");
+    if (selMes) {
+      selMes.addEventListener("change", function () { verMesDetalle(selMes.value, mesPrefijo); });
+    }
+
+    var regsInd = regsDelMesElegido(datos, nombre, mesPrefijo);
+    if (regsInd === null) {
+      cont.appendChild(el("p", "muted", "Cargando el mes…"));
+    } else if (!regsInd.length) {
+      cont.appendChild(el("p", "muted", "No hay datos de ese mes para este fletero."));
+    } else {
+      var grillaInd = el("div", "dias reveal");
+      // Del día más reciente al más viejo: lo último es lo que primero se mira
+      regsInd.slice().reverse().forEach(function (r) { grillaInd.appendChild(tarjetaDia(r)); });
+      cont.appendChild(grillaInd);
+      var sinRuta = 0;
+      regsInd.forEach(function (r) { sinRuta += (r.sin_ruta || 0); });
+      if (sinRuta > 0) {
+        cont.appendChild(el("p", "dias__nota",
+          "Fuera de ruta = clientes que no son del día que le tocaba repartir. " +
+          sinRuta + " cliente" + (sinRuta === 1 ? "" : "s") + " del mes no tiene" + (sinRuta === 1 ? "" : "n") +
+          " ruta cargada en Gescom y no se cuenta" + (sinRuta === 1 ? "" : "n") + " como fuera de ruta."));
+      }
+    }
 
     // Motivos de rechazo de este fletero (% sobre sus propios rechazos)
     var mpf = (window.__PPP_DATA__ && window.__PPP_DATA__.motivosPorFletero) || {};
@@ -813,7 +930,7 @@
   }
 
   // ---- Render principal -------------------------------------------------
-  var STATE = { datos: null, seleccion: "__general__" };
+  var STATE = { datos: null, seleccion: "__general__", mesDetalle: null, cacheMeses: {} };
 
   function render() {
     var main = $("#panel");
@@ -847,6 +964,8 @@
   }
 
   function seleccionar(nombre) {
+    // Al cambiar de fletero, el detalle vuelve al mes en curso
+    if (nombre !== STATE.seleccion) { STATE.mesDetalle = null; }
     STATE.seleccion = nombre;
     // No persistimos la vista transitoria del cierre de mes
     if (nombre !== "__cierre__") { try { localStorage.setItem("ppp_fletero", nombre); } catch (e) {} }

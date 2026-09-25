@@ -470,6 +470,39 @@ main { max-width: 1080px; margin: 0 auto; padding: 22px 20px 60px; }
   .reveal { opacity: 1 !important; transform: none !important; }
 }
 
+/* ---------- Indicadores día por día del fletero ---------- */
+.diahead {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap; margin: 22px 0 10px;
+}
+.diahead__t { font-size: 16px; margin: 0; color: var(--ink); }
+.diahead__sel {
+  font-family: var(--font); font-size: 14px; font-weight: 600;
+  padding: 9px 14px; border-radius: var(--r-sm);
+  border: 1px solid var(--line); background: var(--paper); color: var(--ink); cursor: pointer;
+}
+/* Una tarjeta por día de reparto, con los 6 indicadores adentro */
+.dias { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(232px, 1fr)); }
+.dia {
+  background: var(--paper); border: 1px solid var(--line); border-radius: var(--r);
+  box-shadow: var(--sh); padding: 12px 14px 13px;
+}
+.dia__cab {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 8px;
+  padding-bottom: 9px; margin-bottom: 10px; border-bottom: 1px solid var(--line);
+}
+.dia__fecha { font-size: 14.5px; font-weight: 800; color: var(--ink); text-transform: capitalize; }
+.dia__rep { font-size: 11px; font-weight: 700; color: var(--pine); }
+.dia__ind { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 12px; }
+.ind { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.ind__k { font-size: 10.5px; color: var(--ink-2); font-weight: 600; white-space: nowrap; }
+.ind__v { font-size: 16px; font-weight: 800; line-height: 1.15; }
+.ind__v--ok  { color: #1F7A46; }
+.ind__v--mid { color: #9A6F14; }
+.ind__v--low { color: #B23A22; }
+.ind__v--n   { color: var(--ink-2); opacity: .6; }
+.dias__nota { font-size: 12px; color: var(--ink-2); margin: 10px 2px 0; line-height: 1.45; }
+
 /* ---------- Fondo oscuro con patrón de reparto (SIEMPRE al final del archivo) ---------- */
 body {
   background-color: #24302A;
@@ -485,4 +518,6 @@ body {
 .muted { color: rgba(242, 239, 230, .75); }
 .person__name { color: #F2EFE6; }
 .person__meta { color: rgba(242, 239, 230, .6); }
+.diahead__t { color: #F2EFE6; }
+.dias__nota { color: rgba(242, 239, 230, .75); }
 #splash { background: #24302A; color: #F2EFE6; }
