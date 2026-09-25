@@ -711,6 +711,33 @@ Cerrar-Xlsx $libroC
 if ($sinMapear.Count -gt 0) { Log ("AVISO nombres sin mapear (agregalos a mapeo-nombres.txt): " + ($sinMapear -join ", ")) }
 Log ("Carton OK: " + $cartones.Count + " registros dia/fletero")
 
+# --- El carton anotado un dia corrido: pegarlo a su reparto (pedido de Lucas 25/9) --
+# En la planilla el carton a veces queda anotado el dia SIGUIENTE al reparto (o el
+# anterior), y entonces la tarjeta del dia del reparto quedaba sin carton y aparecia
+# una fila suelta de carton sin viaje. Si un dia/fletero tiene carton pero NO tuvo
+# reparto, y a UN dia de distancia tiene un reparto que se quedo sin carton, se lo
+# pasamos a ese dia. Se prueba primero el dia ANTERIOR (es el caso normal: el carton
+# vuelve al otro dia) y despues el siguiente. Condiciones para no ensuciar datos:
+# solo si el destino no tiene carton propio y es del MISMO MES (asi los totales del
+# mes -y los premios- no se mueven de un mes al otro: es la misma suma, reordenada).
+$movidos = 0
+foreach ($ck in @($cartones.Keys)) {
+  if ($entregas[$ck]) { continue }                       # ese dia si hubo reparto: nada que hacer
+  $pp = $ck.Split("|"); $fc = $pp[0]; $cho = $pp[1]
+  foreach ($delta in @(-1, 1)) {
+    $otra = ([DateTime]$fc).AddDays($delta).ToString("yyyy-MM-dd")
+    if ($otra.Substring(0, 7) -ne $fc.Substring(0, 7)) { continue }   # no cruzar de mes
+    $dest = $otra + "|" + $cho
+    if (-not $entregas[$dest]) { continue }              # ahi no hubo reparto
+    if ($cartones[$dest]) { continue }                   # ese dia ya tiene su propio carton
+    $cartones[$dest] = $cartones[$ck]
+    $cartones.Remove($ck)
+    $movidos++
+    break
+  }
+}
+if ($movidos -gt 0) { Log ("Carton: " + $movidos + " dias movidos al dia de su reparto (diferencia de un dia en la planilla)") }
+
 # ============================================================================
 # 3) Unir y generar data.js
 # ============================================================================
