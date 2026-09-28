@@ -93,6 +93,34 @@ function EsNumero($v) { return ($null -ne $v -and [string]$v -match "^-?\d+(\.\d
 # ============================================================================
 Log "================ INICIO ================"
 
+# --- Bajada inteligente: UNA SOLA POR DIA (28/9/2026) -----------------------
+# El workflow tiene 6 crons (3 a la manana y 3 a la tarde) porque los cron
+# gratuitos de GitHub a veces no disparan. Pero este robot NO salteaba: las 6
+# corridas bajaban de Gescom. Medido en las corridas del 25/9: las 6 tardaron
+# entre 64 y 101 segundos, o sea que las 6 bajaron.
+# Los robots de Lago Puelo/Elebes y de Tienda Perfecta ya tenian este salteo;
+# este se quedo sin el.
+#
+# Ahora, en corridas automaticas (schedule), si el data.js del repo ya tiene la
+# fecha de HOY salimos sin pegarle a Gescom: los reintentos del turno saltan en
+# 1 segundo y la tarde solo baja si fallo la manana entera. Las corridas
+# MANUALES (workflow_dispatch) NUNCA saltan, para poder forzar.
+if ($env:GITHUB_WORKSPACE -and $env:GITHUB_EVENT_NAME -eq "schedule" -and -not $env:FORCE_MES) {
+  # OJO: en la nube hay que ir a GITHUB_WORKSPACE, NO a $CARPETA_PROYECTO, que
+  # es la ruta de la PC de Lucas y alla no existe. Con la ruta local el Test-Path
+  # daba falso siempre y el salteo no habria servido de nada.
+  $dataJsRepo = Join-Path $env:GITHUB_WORKSPACE "data.js"
+  if (Test-Path $dataJsRepo) {
+    $cab = (Get-Content $dataJsRepo -TotalCount 3 -Encoding UTF8) -join " "
+    $hoyStr = (Get-Date -Format "yyyy-MM-dd")
+    if ($cab -match ("Ultima actualizacion: " + [regex]::Escape($hoyStr))) {
+      Log "Datos de hoy ($hoyStr) ya publicados: no hace falta bajar de nuevo"
+      Log "================ FIN ================"
+      exit 0
+    }
+  }
+}
+
 # ============================================================================
 # 2b) MOTIVOS, ESTADISTICAS Y ANALISIS DE RECHAZOS desde la API de Gescom
 #     Desde jul-2026 reemplaza al CSV de ventas (verificado boleta por boleta:
