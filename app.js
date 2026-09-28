@@ -310,14 +310,17 @@
   var DIAS_CORTO = ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"];
 
   // Una tarjeta POR DÍA de reparto, con los 6 indicadores adentro.
-  function tarjetaDia(r) {
+  // "aclaracion" es lo que va arriba a la derecha; si no se pasa, muestra los
+  // repartos del día cuando hizo más de uno.
+  function tarjetaDia(r, aclaracion) {
     var box = el("div", "dia");
     var d = new Date(r.fecha + "T00:00:00");
     var fTxt = DIAS_CORTO[d.getDay()] + " " + r.fecha.slice(8) + "/" + r.fecha.slice(5, 7);
     var reps = r.repartos || 0;
+    var cab = aclaracion != null ? aclaracion : (reps > 1 ? reps + " repartos" : "");
     box.appendChild(el("div", "dia__cab",
       '<span class="dia__fecha">' + fTxt + '</span>' +
-      (reps > 1 ? '<span class="dia__rep">' + reps + ' repartos</span>' : '')));
+      (cab ? '<span class="dia__rep">' + cab + '</span>' : '')));
     var filas = INDICADORES.map(function (ind) {
       var v = valorDia(r, ind.k);
       var txt = v == null ? "—" : (ind.u === "%" ? Math.round(v) + "%" : fmtNum(v));
@@ -326,6 +329,36 @@
     }).join("");
     box.appendChild(el("div", "dia__ind", filas));
     return box;
+  }
+
+  // Junta los registros de TODOS los fleteros en uno solo por día, para las
+  // tarjetas de la pantalla general: cada indicador sale de la suma del día
+  // (no del promedio de los fleteros), igual que los anillos de la empresa.
+  function sumarPorDia(regs) {
+    var porFecha = {};
+    regs.forEach(function (r) {
+      var a = porFecha[r.fecha];
+      if (!a) {
+        a = porFecha[r.fecha] = { fecha: r.fecha, repartos: 0, fleteros: 0,
+          entregas_asignadas: 0, entregas_realizadas: 0,
+          cartones_a_retornar: 0, cartones_retornados: 0,
+          clientes: 0, fuera_ruta: 0, sin_ruta: 0,
+          unidades_entregadas: 0, plata_facturada: 0, plata_rechazada: 0 };
+      }
+      if ((r.repartos || 0) > 0 || (r.entregas_asignadas || 0) > 0) { a.fleteros++; }
+      a.repartos += r.repartos || 0;
+      a.entregas_asignadas += r.entregas_asignadas || 0;
+      a.entregas_realizadas += r.entregas_realizadas || 0;
+      a.cartones_a_retornar += r.cartones_a_retornar || 0;
+      a.cartones_retornados += r.cartones_retornados || 0;
+      a.clientes += r.clientes || 0;
+      a.fuera_ruta += r.fuera_ruta || 0;
+      a.sin_ruta += r.sin_ruta || 0;
+      a.unidades_entregadas += r.unidades_entregadas || 0;
+      a.plata_facturada += r.plata_facturada || 0;
+      a.plata_rechazada += r.plata_rechazada || 0;
+    });
+    return Object.keys(porFecha).sort().map(function (f) { return porFecha[f]; });
   }
 
   // Registros del fletero para el mes elegido (el actual sale de data.js; los
@@ -827,6 +860,23 @@
       "💰 Premios por retorno de cartón: de 60% a 69,99% cobrás <b>$50.000</b> · de 70% a 79,99% cobrás <b>$100.000</b> · de 80% a 100% cobrás <b>$150.000</b>. Requisito: " + ASIST_MIN + "% de asistencia o más.");
     if (rankE) cont.appendChild(rankE);
     if (rankR) cont.appendChild(rankR);
+
+    // ---- Indicadores: una tarjeta por día del mes, con TODOS los fleteros ----
+    // Cada indicador es el total del día (suma de todos), no el promedio de los
+    // fleteros: es el mismo criterio de los anillos de arriba.
+    var dias = sumarPorDia(delMes(todos)).filter(function (r) {
+      return r.entregas_asignadas > 0 || r.cartones_a_retornar > 0;
+    });
+    if (dias.length) {
+      var cabG = el("div", "diahead reveal");
+      cabG.innerHTML = '<h2 class="diahead__t">📊 Indicadores · ' + mesNombre + '</h2>';
+      cont.appendChild(cabG);
+      var grillaG = el("div", "dias reveal");
+      dias.slice().reverse().forEach(function (r) {
+        grillaG.appendChild(tarjetaDia(r, r.fleteros + (r.fleteros === 1 ? " fletero" : " fleteros")));
+      });
+      cont.appendChild(grillaG);
+    }
 
     return cont;
   }
