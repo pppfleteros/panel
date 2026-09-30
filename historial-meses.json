@@ -406,13 +406,13 @@
                     "actualizado":  "2026-09-10"
                 },
     "2026-09":  {
-                    "boletasEnt":  16236,
+                    "boletasEnt":  16232,
                     "boletasSac":  17524,
                     "efGeneral":  93,
                     "fleteros":  26,
-                    "clientesEnt":  9364,
+                    "clientesEnt":  9600,
                     "cartonGeneral":  56,
-                    "clientesSac":  9790,
+                    "clientesSac":  10027,
                     "repartos":  454,
                     "premiosTotal":  1550000,
                     "ranking":  [
@@ -580,7 +580,7 @@
                                         "nombre":  "Claudio Ponce",
                                         "repartos":  20,
                                         "asist":  91,
-                                        "efE":  89,
+                                        "efE":  88,
                                         "efC":  null,
                                         "premio":  0
                                     },
@@ -625,7 +625,7 @@
                                         "premio":  0
                                     }
                                 ],
-                    "plataRech":  86969962,
+                    "plataRech":  87213804,
                     "actualizado":  "2026-09-30"
                 }
 }
