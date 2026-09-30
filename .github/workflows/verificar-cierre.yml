@@ -50,9 +50,9 @@ jobs:
         if: steps.guard.outputs.correr == 'si'
         shell: powershell
         env:
-          GESCOM_REALM: ${{ secrets.GESCOM_REALM }}
-          GESCOM_USUARIO: ${{ secrets.GESCOM_USUARIO }}
-          GESCOM_CLAVE: ${{ secrets.GESCOM_CLAVE }}
+          # Lee de la base de Gescom (datos-gescom), no de la API: desde el 30/9/2026
+          # este robot no tiene claves de Gescom.
+          DATOS_GESCOM_CLAVE: ${{ secrets.DATOS_GESCOM_CLAVE }}
           CARTON_URL: ${{ secrets.CARTON_URL }}
           FORCE_MES: "anterior"
         run: .\robot-nube.ps1

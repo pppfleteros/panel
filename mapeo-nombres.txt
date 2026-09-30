@@ -36,3 +36,8 @@ Leandro B = LEANDRO BENITEZ
 
 # Nombres mal escritos en la planilla de carton (25/09)
 Javier S = JAVIER SOTELO
+
+# Nombres de la planilla de carton (30/09)
+Carlos E = CARLOS GUILLERMO ESCUDERO
+Carlitos E = CARLOS GUILLERMO ESCUDERO
+Norberto = NORBERTO VERA

@@ -1,14 +1,16 @@
 # ============================================================================
 # ROBOT ACTUALIZADOR (NUBE) - Panel de Fleteros PPP
 # Corre en GitHub Actions (ver .github/workflows/actualizar-panel.yml).
-#   1. API de Gescom               -> efectividad de entrega (repartos), motivos,
-#      estadisticas, analisis de rechazos, proveedores y feriados
+#   1. Base de Gescom (datos-gescom) -> efectividad de entrega (repartos), motivos,
+#      estadisticas, analisis de rechazos y proveedores. Desde el 30/9/2026 el
+#      robot NO le pide nada a la API de Gescom: la base es la unica que lo hace.
 #   2. Planilla de carton de Drive -> se descarga sola desde CARTON_URL (secreto)
 # Genera data.js e historial-meses.json en la raiz del repo; el workflow los
 # commitea y GitHub Pages publica. Credenciales por variables de entorno:
-#   GESCOM_REALM / GESCOM_USUARIO / GESCOM_CLAVE / CARTON_URL (secretos del repo)
-# Para probarlo en la PC: sin esas variables, lee robot\gescom-api.txt y el
-# Carton*.xlsx de Documentos\GESCOM (modo prueba local).
+#   DATOS_GESCOM_CLAVE / CARTON_URL (secretos del repo)
+# Para probarlo en la PC: sin esas variables, toma la clave del panel de
+# Documentos\Panel-Ventas\base\claves-companeros.txt y el Carton*.xlsx de
+# Documentos\GESCOM (modo prueba local).
 # ============================================================================
 
 $ErrorActionPreference = "Stop"
@@ -139,8 +141,8 @@ if ($env:FORCE_MES) { Log ("Modo VERIFICACION del mes " + $env:FORCE_MES) }
 
 # --- Bajar los datos UNA sola vez por dia ---------------------------------
 # Hay varias corridas programadas por dia (respaldos por si GitHub demora o
-# saltea alguna). Para no cargar la API de Gescom de mas, si el panel YA se
-# actualizo hoy y esta es una corrida automatica, salimos sin bajar nada.
+# saltea alguna). Una lectura por dia alcanza (pedido de Lucas): si el panel YA
+# se actualizo hoy y esta es una corrida automatica, salimos sin leer nada.
 # Las corridas MANUALES (Run workflow) y las de VERIFICACION (FORCE_MES) siempre corren.
 $dataActual = Join-Path $RAIZ "data.js"
 if ($env:GITHUB_EVENT_NAME -eq "schedule" -and -not $env:FORCE_MES -and (Test-Path $dataActual)) {
@@ -153,9 +155,9 @@ if ($env:GITHUB_EVENT_NAME -eq "schedule" -and -not $env:FORCE_MES -and (Test-Pa
 }
 
 # ============================================================================
-# 2b) MOTIVOS, ESTADISTICAS Y ANALISIS DE RECHAZOS desde la API de Gescom
-#     Desde jul-2026 reemplaza al CSV de ventas (verificado boleta por boleta:
-#     el ImporteItem del CSV = importeTotal del item de la API, con IVA).
+# 2b) MOTIVOS, ESTADISTICAS Y ANALISIS DE RECHAZOS desde la base de Gescom
+#     (hasta el 29/9/2026, desde la API; antes de jul-2026, del CSV de ventas.
+#     El importe es el total del item con IVA, verificado boleta por boleta).
 #     Si la API falla, el robot ABORTA sin publicar: el panel queda como ayer.
 # ============================================================================
 $motivos = @{}
@@ -167,103 +169,125 @@ $choProvFact = @{}; $choProvRech = @{}; $provFact = @{}; $provRech = @{}; $factT
 $impRechCho = @{}
 $feriadosWeb = @()
 
-# --- Conexion: credenciales por variables de entorno (secretos del repo) ---
-# Trim: un salto de linea colado en un secreto rompe la URL del login (500)
-$credApi = @{ REALM = ([string]$env:GESCOM_REALM).Trim(); USUARIO = ([string]$env:GESCOM_USUARIO).Trim(); CLAVE = ([string]$env:GESCOM_CLAVE).Trim() }
-if (-not $credApi.REALM) {
-  # Modo prueba local: leerlas del archivo de siempre
-  $archCred = "C:\Users\luqaa\Documents\PPP-Fleteros\robot\gescom-api.txt"
-  foreach ($lg in Get-Content $archCred -Encoding UTF8) {
-    $pg = $lg.Split("=", 2); if ($pg.Count -eq 2) { $credApi[$pg[0].Trim()] = $pg[1].Trim() }
-  }
-}
-if (-not $credApi.REALM -or -not $credApi.USUARIO -or -not $credApi.CLAVE) {
-  Log "ERROR: faltan los secretos GESCOM_REALM / GESCOM_USUARIO / GESCOM_CLAVE"
-  exit 1
-}
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-
-function Get-TokenGescom {
-  # El token de ACCESO dura pocos minutos (no 24 h): se renueva cada vez que hace falta
-  $tk = (Invoke-RestMethod -Method Post -TimeoutSec 30 `
-    -Uri ("https://auth.gescom.online/realms/" + $credApi.REALM + "/protocol/openid-connect/token") `
-    -Body @{ grant_type = "password"; client_id = "gcw-web-api"; username = $credApi.USUARIO; password = $credApi.CLAVE }).access_token
-  $script:HDR_GESCOM = @{ Authorization = "Bearer " + $tk }
-}
-try {
-  Get-TokenGescom
-} catch {
-  Log ("ERROR: no pude entrar a la API de Gescom (token): " + $_.Exception.Message)
-  Log "No se publica nada: el panel queda como estaba. Probar de nuevo mas tarde con el acceso directo."
-  exit 1
-}
-
-function Get-Gescom($ruta) {
-  # Reintenta con espera creciente (el servidor rebota rafagas: "Acceso denegado")
-  # y renueva el token si vencio (401 No autorizado).
-  $esperasG = @(10, 30, 60, 120, 180); $ng = 0
-  while ($true) {
-    try { return Invoke-RestMethod -Uri ("https://pehuenia.gescom.online/data/cmd/" + $ruta) -Headers $script:HDR_GESCOM -TimeoutSec 180 }
-    catch {
-      if ($ng -ge $esperasG.Count) { throw }
-      $st = 0
-      try { $st = [int]$_.Exception.Response.StatusCode } catch { }
-      if ($st -eq 401) {
-        try { Get-TokenGescom } catch { Start-Sleep -Seconds $esperasG[$ng] }
-      } else {
-        Start-Sleep -Seconds $esperasG[$ng]
-      }
-      $ng++
+# --- Conexion: la BASE DE GESCOM, no la API de Gescom (desde el 30/9/2026) ---
+# Este robot ya NO le habla a Gescom. Lee de la base propia (gescom-pehuenia),
+# que es lo unico que consulta la API, con seguro contra rafagas: decision de
+# Lucas despues de que IDEA bloqueara el usuario de API el 28 y el 29/9.
+# La base se actualiza cada hora de 7 a 17 (ver memoria base-gescom-conectar-panel).
+# Se lee por datos-gescom con una clave propia del panel (secreto
+# DATOS_GESCOM_CLAVE): tope 120 consultas por hora y 20.000 filas por respuesta,
+# por eso las consultas grandes se paginan. Una corrida usa unas 15.
+$URL_BASE = "https://datos-gescom.panelempresas.workers.dev/consulta"
+# Trim: un salto de linea colado en un secreto rompe el encabezado
+$claveBase = ([string]$env:DATOS_GESCOM_CLAVE).Trim()
+if (-not $claveBase) {
+  # Modo prueba local: la clave del panel, del archivo de claves de la base
+  $archClaves = "C:\Users\luqaa\Documents\Panel-Ventas\base\claves-companeros.txt"
+  if (Test-Path $archClaves) {
+    foreach ($lg in Get-Content $archClaves -Encoding UTF8) {
+      if ($lg -match '^PANEL-FLETEROS \(.*\): (\S+)\s*$') { $claveBase = $matches[1] }
     }
   }
 }
+if (-not $claveBase) {
+  Log "ERROR: falta el secreto DATOS_GESCOM_CLAVE (la clave del panel para leer la base de Gescom)"
+  exit 1
+}
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+$script:nConsultas = 0
+
+function Get-Base($sql) {
+  # Una consulta SELECT a la base. Reintenta ante cortes de red o fallas del
+  # servidor; si la base rechaza la consulta (400), la clave (401) o el tope por
+  # hora (429), corta enseguida. Una respuesta CORTADA (mas de 20.000 filas)
+  # tambien aborta: nunca se publica con datos a medias.
+  # OJO: devuelve la lista con la coma adelante; asignarla a una variable y
+  # recorrer esa variable (nunca @(Get-Base ...), que la envuelve en 1 elemento).
+  $cuerpo = [System.Text.Encoding]::UTF8.GetBytes((@{ sql = $sql } | ConvertTo-Json -Compress))
+  $esperas = @(10, 30, 60); $n = 0
+  while ($true) {
+    try {
+      $script:nConsultas++
+      $r = Invoke-RestMethod -Method Post -Uri $URL_BASE -Headers @{ Authorization = "Bearer " + $claveBase } `
+        -ContentType "application/json; charset=utf-8" -Body $cuerpo -TimeoutSec 120
+      break
+    } catch {
+      $st = 0
+      try { $st = [int]$_.Exception.Response.StatusCode } catch { }
+      if ($st -eq 400 -or $st -eq 401 -or $st -eq 429 -or $n -ge $esperas.Count) { throw }
+      Start-Sleep -Seconds $esperas[$n]
+      $n++
+    }
+  }
+  if ($r.truncado) { throw ("la base corto la respuesta en " + $r.cantidad + " filas (hay que paginar): " + $sql.Substring(0, [Math]::Min(90, $sql.Length))) }
+  return ,@($r.filas)
+}
+
+function Get-BasePaginado($sql, $orden) {
+  # Para las consultas que pueden pasar las 20.000 filas: de a 15.000, en orden fijo.
+  $todo = New-Object System.Collections.ArrayList
+  $desde = 0; $pag = 15000
+  while ($true) {
+    $f = Get-Base ($sql + " ORDER BY " + $orden + " LIMIT " + $pag + " OFFSET " + $desde)
+    foreach ($x in $f) { [void]$todo.Add($x) }
+    if ($f.Count -lt $pag) { break }
+    $desde += $pag
+  }
+  return ,$todo
+}
 
 try {
-  # --- Tablas de nombres (codigo -> nombre) ---
-  # OJO: guardar la respuesta en una variable ANTES de recorrerla. Con
-  # @(Get-Gescom ...) directo, PowerShell 5.1 envuelve el array JSON en un
-  # array de 1 elemento y el foreach recorre "una sola cosa" (bug ya sufrido).
-  $resp = Get-Gescom "ventas/api/v1/get-empleados?tipo=CHF"
+  # --- Tablas de nombres (codigo -> nombre), de los catalogos de la base ---
+  # OJO: guardar la respuesta en una variable ANTES de recorrerla (bug ya sufrido
+  # con @(funcion) en PowerShell 5.1).
+  # Choferes = empleados con el tipo CHF (Gescom no tiene una lista aparte).
+  $resp = Get-Base "SELECT codigo, nombre FROM empleados WHERE ',' || tipos || ',' LIKE '%,CHF,%'"
   $nomChofer = @{}
-  foreach ($x in @($resp)) {
+  foreach ($x in $resp) {
     $nomChofer[[string]$x.codigo] = (([string]$x.nombre).Trim().ToUpper() -replace "\s+", " ")
   }
-  $resp = Get-Gescom "ventas/api/v1/get-vendedores"
+  $resp = Get-Base "SELECT codigo, nombre FROM vendedores"
   $nomVend = @{}
-  foreach ($x in @($resp)) {
+  foreach ($x in $resp) {
     $nomVend[[string]$x.codigo] = (([string]$x.nombre).Trim().ToUpper() -replace "\s+", " ")
   }
-  $resp = Get-Gescom "compras/api/v1/get-proveedores"
+  $resp = Get-Base "SELECT codigo, nombre FROM proveedores"
   $nomProv = @{}
-  foreach ($x in @($resp)) {
+  foreach ($x in $resp) {
     $nomProv[[string]$x.codigo] = ([string]$x.nombre).Trim()
   }
-  $resp = Get-Gescom "ventas/api/v1/get-clientes"
+  # Clientes: tambien los dados de baja (la base no los borra), asi un cliente
+  # que se dio de baja en el mes igual tiene su localidad y sus dias de ruta.
+  $resp = Get-Base "SELECT codigo, localidad, razon_social, rutas FROM clientes"
   $cliLoc = @{}; $cliRaz = @{}; $diasPreventa = @{}
-  foreach ($x in @($resp)) {
+  $LETRA_DIA = @{ "L" = "lunes"; "M" = "martes"; "X" = "miercoles"; "J" = "jueves"; "V" = "viernes"; "S" = "sabado"; "D" = "domingo" }
+  foreach ($x in $resp) {
     $cliLoc[[string]$x.codigo] = ([string]$x.localidad).Trim().ToUpper()
-    $cliRaz[[string]$x.codigo] = ([string]$x.razonSocial).Trim()
-    # Dias de preventa del cliente (para FUERA DE RUTA). Cada rutasPreventa trae
-    # banderas lunes..domingo; un cliente puede tener mas de una ruta -> union.
+    $cliRaz[[string]$x.codigo] = ([string]$x.razon_social).Trim()
+    # Dias de preventa del cliente (para FUERA DE RUTA). En la base las rutas
+    # vienen en JSON, una por ruta, con los dias en letras ("dias":"LJ" = lunes y
+    # jueves; X = miercoles). Un cliente puede tener mas de una ruta -> union.
     $setD = @{}
-    foreach ($rr in @($x.rutasPreventa)) {
-      if ($null -eq $rr) { continue }
-      foreach ($dd in $DIAS_SEM) {
-        $vv = $null; try { $vv = $rr.$dd } catch { }
-        if ($vv -eq $true) { $setD[$dd] = $true }
+    if ($x.rutas) {
+      foreach ($mm in [regex]::Matches([string]$x.rutas, '"dias":"([A-Z]*)"')) {
+        foreach ($letra in $mm.Groups[1].Value.ToCharArray()) {
+          $dd = $LETRA_DIA[[string]$letra]
+          if ($dd) { $setD[$dd] = $true }
+        }
       }
     }
     if ($setD.Count -gt 0) { $diasPreventa[[string]$x.codigo] = $setD }
   }
-  $resp = Get-Gescom "inventario/api/v2/get-articulos"
+  $resp = Get-Base "SELECT codigo, proveedor FROM articulos"
   $provArt = @{}
-  foreach ($x in @($resp)) {
-    $provArt[[string]$x.codigo] = [string]$x.codigoProveedor
+  foreach ($x in $resp) {
+    $provArt[[string]$x.codigo] = [string]$x.proveedor
   }
-  $resp = Get-Gescom "ventas/api/v1/get-feriados"
-  $feriadosWeb = @(@($resp) | ForEach-Object { [string]$_.fecha } | Sort-Object -Unique)
-  Log ("API Gescom OK: " + $nomChofer.Count + " choferes, " + $nomVend.Count + " vendedores, " +
-    $cliLoc.Count + " clientes, " + $provArt.Count + " articulos, " + $feriadosWeb.Count + " feriados")
+  # Feriados: la base no los tiene y la web NO los usa (regla de Lucas, 16/7: el
+  # feriado que no se trabaja se compensa el sabado, no se descuenta).
+  $feriadosWeb = @()
+  Log ("Base de Gescom OK: " + $nomChofer.Count + " choferes, " + $nomVend.Count + " vendedores, " +
+    $cliLoc.Count + " clientes, " + $provArt.Count + " articulos")
 
   # --- Ventas dia por dia (fechadesde/fechahasta filtran por fecha de CARGA,
   #     y la preventa se carga hasta ~3 semanas antes de la entrega: margen 21 dias.
@@ -290,16 +314,49 @@ try {
   $motivosMes = @{}   # "mes|motivo" -> cantidad de notas
   $repAcum = @{}      # codigoReparto -> lista de {tipo, vd, fp, unidRech} para la efectividad
   $maxFE = ""
-  $nVen = 0; $nRech = 0; $nPaginas = 0
+  $nVen = 0; $nRech = 0
 
-  $diaDt = $desdeDt
-  while ($diaDt -le $hoyDt) {
-    $d1 = $diaDt.ToString("yyyy-MM-dd"); $d2 = $diaDt.AddDays(1).ToString("yyyy-MM-dd")
-    $skip = 0
-    while ($true) {
-      $respPag = Get-Gescom ("ventas/api/v2/get?fechadesde=" + $d1 + "&fechahasta=" + $d2 + "&pagesize=500&pagestoskip=" + $skip + "&pagestotake=1")
-      $pagina = @($respPag)
-      $nPaginas++
+  # --- Ventas desde la base: la MISMA ventana que antes se le pedia a Gescom
+  #     (cargadas entre $desdeDt y hoy; ventas.fecha = fechaPedido = dia de carga).
+  #     Solo los tipos que el calculo usa: VEN, DEV-RE y DEV-CA. ---
+  $d1v = $desdeDt.ToString("yyyy-MM-dd")
+  $filtroV = "v.fecha BETWEEN '" + $d1v + "' AND '" + $hoyIso + "' AND v.tipo IN ('VEN', 'DEV-RE', 'DEV-CA')"
+  # El motivo del rechazo: si la base todavia no lo guarda, se sigue sin el (ver mas abajo)
+  $colMotivo = ", v.motivo"
+  try { $null = Get-Base "SELECT motivo FROM ventas LIMIT 1" } catch { $colMotivo = ", NULL AS motivo" }
+  $ventasBase = Get-BasePaginado ("SELECT v.id, v.tipo, v.reparto, v.chofer, v.cliente, v.vendedor, v.fecha, v.entrega, v.directa, v.ref_id" +
+    $colMotivo + " FROM ventas v WHERE " + $filtroV) "v.id"
+  # Los articulos, ya sumados por venta y proveedor: el calculo solo necesita
+  # unidades (cantidad x factor de empaque, en valor absoluto) e importe (abs, con
+  # IVA) por venta, y el importe por proveedor. Mismas cuentas que hacia el robot
+  # item por item, pero la base devuelve ~80 mil filas en vez de ~200 mil.
+  $itemsBase = Get-BasePaginado ("SELECT i.venta_id AS vid, COALESCE(a.proveedor, '') AS prov, " +
+    "SUM(ABS(i.cantidad) * (CASE WHEN i.factor > 0 THEN i.factor ELSE 1 END)) AS unid, SUM(ABS(i.total)) AS imp " +
+    "FROM venta_items i JOIN ventas v ON v.id = i.venta_id LEFT JOIN articulos a ON a.codigo = i.articulo " +
+    "WHERE " + $filtroV + " GROUP BY i.venta_id, COALESCE(a.proveedor, '')") "vid, prov"
+  $itemsPorVenta = @{}
+  foreach ($f in $itemsBase) {
+    $kv = [string]$f.vid
+    if (-not $itemsPorVenta[$kv]) { $itemsPorVenta[$kv] = New-Object System.Collections.ArrayList }
+    # "renglon" por proveedor: el factor ya va aplicado en unid, por eso 1
+    $ci = "P|" + [string]$f.prov
+    $provArt[$ci] = [string]$f.prov
+    [void]$itemsPorVenta[$kv].Add(@{ cantidad = [double]$f.unid; unidadFactor = 1; importeTotal = [double]$f.imp; codigoItem = $ci })
+  }
+  # Cada venta con la misma forma que la devolvia la API, asi todo el calculo de
+  # abajo (verificado contra el reporte oficial de Gescom) queda intacto.
+  $pagina = New-Object System.Collections.ArrayList
+  foreach ($f in $ventasBase) {
+    $its = $itemsPorVenta[[string]$f.id]
+    if (-not $its) { $its = @() }
+    $ref = $null
+    if ($f.ref_id) { $ref = @{ id = $f.ref_id } }
+    [void]$pagina.Add(@{ id = $f.id; codigoTipoVenta = $f.tipo; codigoReparto = $f.reparto; codigoChofer = $f.chofer
+      codigoCliente = $f.cliente; codigoVendedor = $f.vendedor; fechaPedido = $f.fecha; fechaEntrega = $f.entrega
+      ventaDirecta = ($f.directa -eq 1); ventaReferenciada = $ref; motivo = $f.motivo; items = $its })
+  }
+  $hayMotivo = ($colMotivo -eq ", v.motivo")
+
       foreach ($v in $pagina) {
         $tipoV = [string]$v.codigoTipoVenta
         $idV = [string]$v.id
@@ -421,17 +478,13 @@ try {
           if (-not $refMotivo.ContainsKey($kr)) { $refMotivo[$kr] = $mot }
         }
       }
-      if ($pagina.Count -lt 500) { break }
-      $skip++
-      Start-Sleep -Seconds 1
-    }
-    $diaDt = $diaDt.AddDays(1)
-    Start-Sleep -Seconds 1
-  }
-  Log ("Ventas API OK: " + $nVen + " boletas y " + $nRech + " notas de rechazo en " + $nPaginas +
-    " llamadas (cargadas desde " + $desdeDt.ToString("yyyy-MM-dd") + ", entregas hasta " + $maxFE + ")")
+  Log ("Ventas de la base OK: " + $nVen + " boletas y " + $nRech + " notas de rechazo (" + $ventasBase.Count +
+    " ventas, cargadas desde " + $d1v + ", entregas hasta " + $maxFE + ")")
 
-  # --- EFECTIVIDAD DE ENTREGA: repartos del mes desde la API ---
+  # --- EFECTIVIDAD DE ENTREGA: repartos del mes (de la base) ---
+  # OJO: la base NO tiene las ventas de MOSTRADOR (vendedor 1176, regla de Lucas
+  # del 29/9). Un viaje que solo llevaba ventas de mostrador queda sin ventas y no
+  # cuenta como reparto. Visto en ago-2026: 4 viajes de 486; en sep-2026, ninguno.
   # Reemplaza al resultado*.xlsx (Fase 2, 16/7). Definiciones OFICIALES verificadas
   # reparto por reparto contra el reporte de Gescom (exacto en los 21 fleteros):
   #   Ventas        = boletas VEN (sin venta directa) + canjes DEV-CA
@@ -440,15 +493,18 @@ try {
   #   RechazoItems  = unidades x factor de empaque de esas notas
   $repartosMes = New-Object System.Collections.ArrayList
   $d1r = $mesIniDt.ToString("yyyy-MM-dd")
-  $d2r = $hoyDt.AddDays(1).ToString("yyyy-MM-dd")   # fechahasta exclusiva -> incluye hoy
-  $skipR = 0
-  while ($true) {
-    $respR = Get-Gescom ("distribucion/api/v1/get-repartos?fechadesde=" + $d1r + "&fechahasta=" + $d2r + "&pagesize=500&pagestoskip=" + $skipR + "&pagestotake=1")
-    $pagR = @($respR)
-    foreach ($rp in $pagR) { [void]$repartosMes.Add($rp) }
-    if ($pagR.Count -lt 500) { break }
-    $skipR++
-    Start-Sleep -Seconds 1
+  $d2r = $hoyIso   # los repartos precargados de dias futuros no cuentan
+  # Los clientes de cada viaje: la API los daba en una lista; en la base salen de
+  # las ventas del viaje (reparto_ventas). Comparado contra lo que publicaba el
+  # panel con la API (1 al 26/9): 348 de 350 dias-fletero identicos.
+  $respR = Get-Base ("SELECT r.codigo, r.fecha, r.descripcion, r.chofer, r.nombre_chofer, " +
+    "(SELECT group_concat(DISTINCT v.cliente) FROM reparto_ventas rv JOIN ventas v ON v.id = rv.venta_id WHERE rv.reparto_id = r.id) AS clientes " +
+    "FROM repartos r WHERE r.fecha BETWEEN '" + $d1r + "' AND '" + $d2r + "'")
+  foreach ($f in $respR) {
+    $cl = @()
+    if ($f.clientes) { $cl = ([string]$f.clientes).Split(",") }
+    [void]$repartosMes.Add(@{ codigo = $f.codigo; fecha = $f.fecha; descripcion = $f.descripcion
+      codigoChofer = $f.chofer; nombreChofer = $f.nombre_chofer; clientes = $cl })
   }
   $entregas = @{}   # clave "fecha|CHOFER" -> @{asig; real; itemsRech}
   $repartosCho = @{} # CHOFER -> cantidad de repartos hechos en el mes (tarjeta del detalle)
@@ -510,7 +566,7 @@ try {
     $entregas[$claveR].impRech += $impRechR
   }
   $choferesGescom = @($entregas.Keys | ForEach-Object { $_.Split("|")[1] } | Sort-Object -Unique)
-  Log ("Efectividad API OK: " + $repartosMes.Count + " repartos del mes -> " + $entregas.Count +
+  Log ("Efectividad OK: " + $repartosMes.Count + " repartos del mes -> " + $entregas.Count +
     " registros dia/chofer, " + $choferesGescom.Count + " choferes")
 
   # --- Mes en curso = mes de la ultima entrega ---
@@ -615,8 +671,8 @@ try {
   Log ("Analisis rechazos: " + $anZonas.Count + " zonas, " + $anVend.Count + " vendedores, " +
     $anClientes.Count + " clientes top, importe total `$" + $anImporte)
 } catch {
-  Log ("ERROR leyendo la API de Gescom: " + $_.Exception.Message)
-  Log "No se publica nada: el panel queda como estaba. Probar de nuevo mas tarde con el acceso directo."
+  Log ("ERROR leyendo la base de Gescom: " + $_.Exception.Message)
+  Log "No se publica nada: el panel queda como estaba. Probar de nuevo mas tarde (Actions -> Run workflow)."
   exit 1
 }
 
@@ -819,11 +875,25 @@ foreach ($clave in $claves) {
   if ($fecha -like ($mesArchivo + "*")) { [void]$regsDelMes.Add($json) }
 }
 [void]$sb.AppendLine("] };")
+# MOTIVOS SIN DATO EN LA BASE (30/9/2026): la base de Gescom todavia no guarda el
+# motivo de cada nota de rechazo. En vez de publicar todo como "Sin especificar",
+# se mantienen las dos lineas de motivos de la ultima publicacion buena (hechas
+# con la API) y se avisa. Cuando la base agregue la columna ventas.motivo, el
+# robot la usa solo ($hayMotivo) y esto deja de aplicar.
+$motivosViejos = $null; $motivosFletViejos = $null
+if (-not $hayMotivo -and (Test-Path $dataActual)) {
+  foreach ($lv in (Get-Content $dataActual -Encoding UTF8)) {
+    if ($lv.StartsWith("window.__PPP_DATA__.motivos = ")) { $motivosViejos = $lv }
+    if ($lv.StartsWith("window.__PPP_DATA__.motivosPorFletero = ")) { $motivosFletViejos = $lv }
+  }
+  Log "AVISO: la base todavia no tiene el motivo de los rechazos: se mantienen los motivos de la ultima publicacion"
+}
 # Motivos de rechazo (ordenados de mas a menos frecuente)
 $listaMot = $motivos.GetEnumerator() | Sort-Object Value -Descending | ForEach-Object {
   '{"motivo":"' + ($_.Key -replace '"', "'") + '","cantidad":' + $_.Value + '}'
 }
-[void]$sb.AppendLine("window.__PPP_DATA__.motivos = [" + ($listaMot -join ",") + "];")
+if ($motivosViejos) { [void]$sb.AppendLine($motivosViejos) }
+else { [void]$sb.AppendLine("window.__PPP_DATA__.motivos = [" + ($listaMot -join ",") + "];") }
 # Feriados del anio (para descontarlos de los dias habiles en la asistencia)
 $listaFer = @($feriadosWeb | ForEach-Object { '"' + $_ + '"' }) -join ","
 [void]$sb.AppendLine("window.__PPP_DATA__.feriados = [" + $listaFer + "];")
@@ -837,7 +907,8 @@ $porFle = foreach ($cho in ($motivosPorChofer.Keys | Sort-Object)) {
   }
   '"' + (NombreMostrar $cho) + '":[' + ($lista -join ",") + ']'
 }
-[void]$sb.AppendLine("window.__PPP_DATA__.motivosPorFletero = {" + ($porFle -join ",") + "};")
+if ($motivosFletViejos) { [void]$sb.AppendLine($motivosFletViejos) }
+else { [void]$sb.AppendLine("window.__PPP_DATA__.motivosPorFletero = {" + ($porFle -join ",") + "};") }
 # Estadisticas del mes por fletero (rechazos totales/parciales, clientes y boletas)
 # Items (productos) rechazados del mes por chofer, desde el reporte oficial de Gescom
 $mesStats = $ultimaFecha.Substring(0, 7)
