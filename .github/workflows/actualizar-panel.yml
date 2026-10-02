@@ -38,6 +38,33 @@ jobs:
         shell: powershell
         run: tzutil /s "Argentina Standard Time"
 
+      # La FOTO FINAL de los dos meses anteriores (meses/<mes>.js), para ver en la
+      # web como termino cada mes (pedido de Lucas, 2/10/2026). Se rehace cada dia
+      # desde la base: si algo de un mes cerrado cambia, la foto se actualiza.
+      # Va ANTES del mes en curso para que data.js ya los liste. Si falla, el
+      # panel del dia se actualiza igual (continue-on-error).
+      - name: Fotos de los meses cerrados
+        shell: powershell
+        continue-on-error: true
+        env:
+          DATOS_GESCOM_CLAVE: ${{ secrets.DATOS_GESCOM_CLAVE }}
+          CARTON_URL: ${{ secrets.CARTON_URL }}
+        run: |
+          $hoy = Get-Date -Format "yyyy-MM-dd"
+          if ($env:GITHUB_EVENT_NAME -eq "schedule" -and (Select-String -Path data.js -Pattern ("Ultima actualizacion: " + $hoy) -Quiet)) {
+            Write-Output "El panel ya se actualizo hoy: las fotos tambien"
+            exit 0
+          }
+          foreach ($k in 2, 1) {
+            $m = (Get-Date -Day 1).Date.AddMonths(-$k).ToString("yyyy-MM")
+            # Agosto 2026 queda CONGELADO como se pago (decision de Lucas, 2/10/2026):
+            # su foto se hizo una vez y no se rehace. Septiembre en adelante, si.
+            if ($m -le "2026-08") { continue }
+            $env:IMAGEN_MES = $m
+            .\robot-nube.ps1
+            if ($LASTEXITCODE -ne 0) { exit 1 }
+          }
+
       - name: Correr el robot
         shell: powershell
         env:

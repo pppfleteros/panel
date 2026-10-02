@@ -135,9 +135,23 @@ if ($env:FORCE_MES -eq "anterior") {
   $env:FORCE_MES = (Get-Date -Day 1).Date.AddMonths(-1).ToString("yyyy-MM")
 }
 
+# IMAGEN_MES=yyyy-MM -> la FOTO FINAL de un mes cerrado para la web (pedido de
+# Lucas, 2/10/2026: "ver los meses anteriores como terminaron, con todos sus datos
+# generales e individuales de cada fletero"). Calcula el mes entero igual que la
+# verificacion (FORCE_MES), pero NO toca data.js, ni el historial de premios, ni
+# el informe: solo escribe meses/<mes>.js con TODO lo que la web necesita. El
+# workflow la rehace cada dia para los dos meses anteriores, asi si en la base
+# cambia algo de un mes ya cerrado, la foto se actualiza sola.
+$modoImagen = $false
+if ($env:IMAGEN_MES -match '^\d{4}-\d{2}$') {
+  $modoImagen = $true
+  $env:FORCE_MES = $env:IMAGEN_MES
+}
+
 # ============================================================================
 Log ("================ INICIO (" + $MODO + ") ================")
-if ($env:FORCE_MES) { Log ("Modo VERIFICACION del mes " + $env:FORCE_MES) }
+if ($modoImagen) { Log ("Modo IMAGEN del mes " + $env:IMAGEN_MES + " (foto final para la web)") }
+elseif ($env:FORCE_MES) { Log ("Modo VERIFICACION del mes " + $env:FORCE_MES) }
 
 # --- Bajar los datos UNA sola vez por dia ---------------------------------
 # Hay varias corridas programadas por dia (respaldos por si GitHub demora o
@@ -320,7 +334,21 @@ try {
   #     (cargadas entre $desdeDt y hoy; ventas.fecha = fechaPedido = dia de carga).
   #     Solo los tipos que el calculo usa: VEN, DEV-RE y DEV-CA. ---
   $d1v = $desdeDt.ToString("yyyy-MM-dd")
-  $filtroV = "v.fecha BETWEEN '" + $d1v + "' AND '" + $hoyIso + "' AND v.tipo IN ('VEN', 'DEV-RE', 'DEV-CA')"
+  # Hasta HOY de verdad, tambien al recalcular un mes cerrado: los rechazos de los
+  # ultimos dias del mes se cargan en los primeros del mes siguiente (los del
+  # 29 y 30/9 entraron el 1/10). Cortando la carga a fin de mes quedaban afuera y
+  # el 30/9 salia con 100% de entrega. Lo que se ENTREGO despues del mes no
+  # cuenta igual: abajo se filtra por fecha de entrega y por reparto del mes.
+  # Decision de Lucas (2/10/2026): esto vale DE SEPTIEMBRE 2026 EN ADELANTE, tanto
+  # para la foto del mes como para la tabla de premios del dia 10 (que asi toma
+  # todo lo cargado hasta ese dia). AGOSTO 2026 se muestra COMO SE PAGO: "no
+  # podemos modificar agosto ahora" -> para ese mes (y anteriores) la carga se
+  # sigue cortando en el ultimo dia del mes.
+  $MES_PAGADO_SIN_TARDIOS = "2026-08"
+  $hastaCarga = (Get-Date).ToString("yyyy-MM-dd")
+  if ($hastaCarga -lt $hoyIso) { $hastaCarga = $hoyIso }
+  if ($env:FORCE_MES -match '^\d{4}-\d{2}$' -and $env:FORCE_MES -le $MES_PAGADO_SIN_TARDIOS) { $hastaCarga = $hoyIso }
+  $filtroV = "v.fecha BETWEEN '" + $d1v + "' AND '" + $hastaCarga + "' AND v.tipo IN ('VEN', 'DEV-RE', 'DEV-CA')"
   # El motivo del rechazo: si la base todavia no lo guarda, se sigue sin el (ver mas abajo)
   $colMotivo = ", v.motivo"
   try { $null = Get-Base "SELECT motivo FROM ventas LIMIT 1" } catch { $colMotivo = ", NULL AS motivo" }
@@ -734,6 +762,10 @@ $libroC = Abrir-Xlsx $rutaCarton
 $cartones = @{}   # clave "fecha|CHOFER" -> @{sal; vue}
 $vistos = @{}     # dedupe exacto fecha|fletero|reparto
 $fechaMin = (Get-Date).AddDays(-$DIAS_HISTORIAL)
+# Al recalcular un mes YA CERRADO (verificacion o foto), el carton se lee desde el
+# arranque de ESE mes, no desde "hoy menos 50 dias": si no, a un mes de hace tiempo
+# le faltaban los primeros dias de carton (paso con agosto, recalculado el 30/9).
+if ($env:FORCE_MES -match '^\d{4}-\d{2}$') { $fechaMin = $desdeDt }
 
 foreach ($hoja in @($libroC.hojas.Keys)) {
   if (-not $MESES.ContainsKey($hoja)) { continue }   # salta ModeloEnBlanco, Semanal Mayo, etc.
@@ -845,10 +877,6 @@ $sb = New-Object System.Text.StringBuilder
 [void]$sb.AppendLine("  diasHistorial: 14")
 [void]$sb.AppendLine("};")
 [void]$sb.AppendLine("window.__PPP_DATA__ = { registros: [")
-# Los registros del mes en curso se guardan ademas en meses\<mes>.json, para que
-# el detalle del fletero pueda mostrar meses ya cerrados (pedido de Lucas 25/9).
-$mesArchivo = $ultimaFecha.Substring(0, 7)
-$regsDelMes = New-Object System.Collections.ArrayList
 $primero = $true
 foreach ($clave in $claves) {
   $p = $clave.Split("|"); $fecha = $p[0]; $chofer = $p[1]
@@ -872,7 +900,6 @@ foreach ($clave in $claves) {
   $json = '{"fecha":"' + $fecha + '","fletero":"' + $mostrar + '","zona":"","repartos":' + $nrep + ',"entregas_asignadas":' + $ea + ',"entregas_realizadas":' + $er + ',"cartones_a_retornar":' + $ca + ',"cartones_retornados":' + $cr +
     ',"clientes":' + $nCli + ',"fuera_ruta":' + $nFdr + ',"sin_ruta":' + $nSinR + ',"unidades_entregadas":' + $nUnid + ',"plata_facturada":' + $nFact + ',"plata_rechazada":' + $nRech + '}'
   [void]$sb.AppendLine($coma + $json)
-  if ($fecha -like ($mesArchivo + "*")) { [void]$regsDelMes.Add($json) }
 }
 [void]$sb.AppendLine("] };")
 # MOTIVOS SIN DATO EN LA BASE (30/9/2026): la base de Gescom todavia no guarda el
@@ -1015,18 +1042,26 @@ if ($maH -and $null -ne $maH.ranking) {
 
 $utf8 = New-Object System.Text.UTF8Encoding($false)
 
-# --- Archivo del mes: detalle diario por fletero, para consultar meses cerrados ---
-# Se reescribe completo en cada corrida del mes en curso; cuando cambia el mes,
-# el archivo del mes anterior queda tal cual (ya cerrado) y se suma a la lista.
+# --- FOTO FINAL de un mes cerrado (modo IMAGEN_MES) ---
+# Es el mismo contenido que data.js (todos los dias del mes, motivos,
+# estadisticas, analisis de rechazos, proveedores...), pero colgado de
+# window.__PPP_MESES__["yyyy-MM"] para que la web lo cargue sin pisar el mes en
+# curso. Despues sale: no toca data.js ni el historial de premios del dia 10.
 $dirMeses = Join-Path $RAIZ "meses"
 if (-not (Test-Path $dirMeses)) { [void](New-Item -ItemType Directory -Force $dirMeses) }
-if ($regsDelMes.Count -gt 0) {
-  $jm = '{"mes":"' + $mesArchivo + '","actualizado":"' + (Get-Date -Format "yyyy-MM-dd HH:mm") + '","registros":[' + ($regsDelMes -join ",") + ']}'
-  [System.IO.File]::WriteAllText((Join-Path $dirMeses ($mesArchivo + ".json")), $jm, $utf8)
-  Log ("Archivo del mes guardado: meses/" + $mesArchivo + ".json (" + $regsDelMes.Count + " registros dia/fletero)")
+if ($modoImagen) {
+  $claveMes = $env:IMAGEN_MES
+  $txtMes = $sb.ToString().Replace("window.__PPP_DATA__", 'window.__PPP_MESES__["' + $claveMes + '"]')
+  $txtMes = $txtMes.Replace("window.__PPP_CONFIG__ =", "window.__PPP_CONFIG_MES__ =")
+  $txtMes = "window.__PPP_MESES__ = window.__PPP_MESES__ || {};`n" + $txtMes +
+    'window.__PPP_MESES__["' + $claveMes + '"].cerrado = true;' + "`n"
+  [System.IO.File]::WriteAllText((Join-Path $dirMeses ($claveMes + ".js")), $txtMes, $utf8)
+  Log ("Foto del mes guardada: meses/" + $claveMes + ".js (" + $claves.Count + " registros dia/fletero)")
+  Log "================ FIN ================"
+  exit 0
 }
-# Lista de meses disponibles (los que tengan archivo), para el selector de la web
-$mesesDisp = @(Get-ChildItem $dirMeses -Filter "*.json" -ErrorAction SilentlyContinue |
+# Meses cerrados que tienen foto (meses/<mes>.js), para el selector de mes de la web
+$mesesDisp = @(Get-ChildItem $dirMeses -Filter "*.js" -ErrorAction SilentlyContinue |
   ForEach-Object { $_.BaseName } | Where-Object { $_ -match '^\d{4}-\d{2}$' } | Sort-Object -Descending)
 [void]$sb.AppendLine("window.__PPP_DATA__.mesesDisponibles = [" +
   (@($mesesDisp | ForEach-Object { '"' + $_ + '"' }) -join ",") + "];")

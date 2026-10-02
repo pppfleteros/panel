@@ -503,6 +503,29 @@ main { max-width: 1080px; margin: 0 auto; padding: 22px 20px 60px; }
 .ind__v--n   { color: var(--ink-2); opacity: .6; }
 .dias__nota { font-size: 12px; color: var(--ink-2); margin: 10px 2px 0; line-height: 1.45; }
 
+/* ---------- Meses cerrados: selector "Mes" y aviso ---------- */
+#mes-sel {
+  width: 100%; appearance: none; -webkit-appearance: none;
+  font-family: var(--font); font-size: 15px; font-weight: 600; color: var(--ink);
+  padding: 12px 38px 12px 14px; border: 1.5px solid var(--line);
+  border-radius: var(--r-sm); background: var(--paper); box-shadow: var(--sh); cursor: pointer;
+}
+#mes-sel:focus { outline: none; border-color: var(--pine); box-shadow: 0 0 0 3px var(--ok-b); }
+.mesgrupo { display: flex; align-items: center; gap: 12px; flex: 1 1 240px; max-width: 320px; }
+.select-wrap--mes { max-width: 260px; min-width: 170px; }
+.mescerrado {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  background: #F6E7C1; color: #4A3A12; border: 1px solid #E2C677; border-radius: var(--r-sm);
+  padding: 12px 16px; margin-bottom: 18px; font-size: 14px; box-shadow: var(--sh);
+}
+.mescerrado b { color: #2B220A; }
+.mescerrado__btn {
+  border: 0; border-radius: 10px; padding: 9px 14px; cursor: pointer; white-space: nowrap;
+  font-family: var(--font); font-size: 13.5px; font-weight: 800; color: #fff; background: var(--pine);
+}
+.dot--cerrado { background: #E2B04A !important; box-shadow: 0 0 0 4px rgba(226, 176, 74, .25) !important; }
+@media print { .mescerrado { display: none; } }
+
 /* ---------- Fondo oscuro con patrón de reparto (SIEMPRE al final del archivo) ---------- */
 body {
   background-color: #24302A;

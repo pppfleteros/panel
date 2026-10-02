@@ -361,33 +361,6 @@
     return Object.keys(porFecha).sort().map(function (f) { return porFecha[f]; });
   }
 
-  // Registros del fletero para el mes elegido (el actual sale de data.js; los
-  // cerrados se bajan de meses/<mes>.json cuando hacen falta).
-  function regsDelMesElegido(datos, nombre, mesPrefijo) {
-    if (!STATE.mesDetalle || STATE.mesDetalle === mesPrefijo) {
-      var g = datos.porFletero[nombre];
-      return g ? g.regs.filter(function (r) { return r.fecha.indexOf(mesPrefijo) === 0; }) : [];
-    }
-    var lista = STATE.cacheMeses[STATE.mesDetalle];
-    if (!lista) return null;   // null = todavía cargando
-    return lista.filter(function (r) { return r.fletero === nombre; })
-      .sort(function (a, b) { return a.fecha < b.fecha ? -1 : 1; });
-  }
-
-  function verMesDetalle(mes, mesActual) {
-    STATE.mesDetalle = mes;
-    if (!mes || mes === mesActual || STATE.cacheMeses[mes]) { render(); return; }
-    render();   // muestra "cargando"
-    fetch("meses/" + mes + ".json?cb=" + Date.now(), { cache: "no-store" })
-      .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
-      .then(function (j) { STATE.cacheMeses[mes] = j.registros || []; render(); })
-      .catch(function (e) {
-        console.warn("[PPP] No pude leer el mes " + mes, e);
-        STATE.cacheMeses[mes] = [];
-        render();
-      });
-  }
-
   // ---- Vistas -----------------------------------------------------------
   function vistaFletero(datos, nombre) {
     var g = datos.porFletero[nombre];
@@ -445,31 +418,15 @@
     sparks.appendChild(miniBarras(g.regs, "R", "Cartón · últimos días"));
     cont.appendChild(sparks);
 
-    // ---- Indicadores día por día (con selector de mes) ----
-    var meses = (window.__PPP_DATA__ && window.__PPP_DATA__.mesesDisponibles) || [];
-    var mesElegido = STATE.mesDetalle || mesPrefijo;
+    // ---- Indicadores día por día (del mes que se está mirando: el mes en
+    //      curso o uno cerrado, elegido arriba en "Mes") ----
     var cabIndic = el("div", "diahead reveal");
-    var nomMesEl = NOMBRES_MES[parseInt(mesElegido.slice(5), 10) - 1] || "";
-    var opts = "";
-    if (meses.indexOf(mesPrefijo) < 0) { meses = [mesPrefijo].concat(meses); }
-    meses.forEach(function (m) {
-      var nm = (NOMBRES_MES[parseInt(m.slice(5), 10) - 1] || m) + " " + m.slice(0, 4);
-      opts += '<option value="' + m + '"' + (m === mesElegido ? " selected" : "") + '>' + nm + '</option>';
-    });
-    cabIndic.innerHTML =
-      '<h2 class="diahead__t">📅 Cómo le fue cada día · ' + nomMesEl + '</h2>' +
-      (meses.length > 1 ? '<select class="diahead__sel" aria-label="Elegí el mes">' + opts + '</select>' : '');
+    cabIndic.innerHTML = '<h2 class="diahead__t">📅 Cómo le fue cada día · ' + mesNombre + '</h2>';
     cont.appendChild(cabIndic);
-    var selMes = cabIndic.querySelector(".diahead__sel");
-    if (selMes) {
-      selMes.addEventListener("change", function () { verMesDetalle(selMes.value, mesPrefijo); });
-    }
 
-    var regsInd = regsDelMesElegido(datos, nombre, mesPrefijo);
-    if (regsInd === null) {
-      cont.appendChild(el("p", "muted", "Cargando el mes…"));
-    } else if (!regsInd.length) {
-      cont.appendChild(el("p", "muted", "No hay datos de ese mes para este fletero."));
+    var regsInd = g.regs.filter(function (r) { return r.fecha.indexOf(mesPrefijo) === 0; });
+    if (!regsInd.length) {
+      cont.appendChild(el("p", "muted", "No hay datos de este mes para este fletero."));
     } else {
       var grillaInd = el("div", "dias reveal");
       // Del día más reciente al más viejo: lo último es lo que primero se mira
@@ -682,7 +639,8 @@
 
   function vistaGeneral(datos) {
     var cont = el("div", "view");
-    var cierre = tarjetaCierreMes(datos);
+    // El festejo del mes anterior es para el mes en curso, no al mirar uno cerrado
+    var cierre = mesCerrado() ? null : tarjetaCierreMes(datos);
     if (cierre) cont.appendChild(cierre);
     var nombres = Object.keys(datos.porFletero);
 
@@ -711,12 +669,19 @@
     // trabaja se compensa repartiendo el sábado; data.js trae la lista igual).
     var ultimaFecha = fechasTodas.length ? fechasTodas[fechasTodas.length - 1] : "";
     var habiles = 0;
+    var cerrado = mesCerrado();
     if (mesPrefijo && ultimaFecha) {
       var aa = parseInt(mesPrefijo.slice(0, 4), 10), mm = parseInt(mesPrefijo.slice(5), 10);
-      var ultDia = parseInt(ultimaFecha.slice(8), 10);
-      for (var dd = 1; dd < ultDia; dd++) {   // < : excluye el día en curso
-        var dow = new Date(aa, mm - 1, dd).getDay();
-        if (dow >= 1 && dow <= 5) habiles++;
+      if (cerrado) {
+        // Mes CERRADO: todos sus días hábiles y todos los repartos, sin atraso
+        // (misma cuenta que la tabla de premios del día 10)
+        habiles = habilesDeMes(aa, mm);
+      } else {
+        var ultDia = parseInt(ultimaFecha.slice(8), 10);
+        for (var dd = 1; dd < ultDia; dd++) {   // < : excluye el día en curso
+          var dow = new Date(aa, mm - 1, dd).getDay();
+          if (dow >= 1 && dow <= 5) habiles++;
+        }
       }
     }
 
@@ -730,7 +695,7 @@
       // se cuenta 1 por día con entregas, como antes.
       var trab = 0;
       regsMes.forEach(function (r) {
-        if (r.fecha === ultimaFecha) return;
+        if (r.fecha === ultimaFecha && !cerrado) return;
         if (r.repartos) trab += r.repartos;
         else if (r.entregas_asignadas > 0) trab += 1;
       });
@@ -980,7 +945,7 @@
   }
 
   // ---- Render principal -------------------------------------------------
-  var STATE = { datos: null, seleccion: "__general__", mesDetalle: null, cacheMeses: {} };
+  var STATE = { datos: null, seleccion: "__general__" };
 
   function render() {
     var main = $("#panel");
@@ -990,6 +955,19 @@
       : STATE.seleccion === "__rechazos__" ? vistaRechazos(STATE.datos)
       : STATE.seleccion === "__cierre__" ? vistaCierreDetalle(STATE.datos)
       : vistaFletero(STATE.datos, STATE.seleccion);
+    // Mirando un mes cerrado: que quede bien claro, con la salida a mano
+    if (mesCerrado()) {
+      var max = "";
+      STATE.datos.registros.forEach(function (r) { if (r.fecha > max) max = r.fecha; });
+      var aviso = el("div", "mescerrado",
+        '<span>📅 Estás viendo cómo terminó <b>' + nombreMes(max.slice(0, 7)) + '</b> (mes cerrado).</span>' +
+        '<button type="button" class="mescerrado__btn">Volver al mes en curso</button>');
+      aviso.querySelector("button").addEventListener("click", function () {
+        var ms = $("#mes-sel"); if (ms) ms.value = "";
+        verMes("");
+      });
+      main.appendChild(aviso);
+    }
     main.appendChild(v);
 
     activarReveal(main);
@@ -1014,8 +992,6 @@
   }
 
   function seleccionar(nombre) {
-    // Al cambiar de fletero, el detalle vuelve al mes en curso
-    if (nombre !== STATE.seleccion) { STATE.mesDetalle = null; }
     STATE.seleccion = nombre;
     // No persistimos la vista transitoria del cierre de mes
     if (nombre !== "__cierre__") { try { localStorage.setItem("ppp_fletero", nombre); } catch (e) {} }
@@ -1034,7 +1010,11 @@
       o.value = n;
       sel.appendChild(o);
     });
-    sel.addEventListener("change", function () { seleccionar(sel.value); });
+    // Una sola vez: al cambiar de mes se vuelve a llenar la lista, no el evento
+    if (!sel._conEvento) {
+      sel.addEventListener("change", function () { seleccionar(sel.value); });
+      sel._conEvento = true;
+    }
 
     // Recordar selección previa (útil para el móvil de cada fletero)
     var prev = null;
@@ -1043,11 +1023,98 @@
       STATE.seleccion = prev;
       sel.value = prev;
     }
+    // Un fletero que no trabajó en el mes elegido, o el detalle de premios del
+    // día 10 mirando un mes cerrado: se vuelve al resumen de ese mes.
+    var s = STATE.seleccion;
+    if ((s.indexOf("__") !== 0 && !datos.porFletero[s]) || (s === "__cierre__" && mesCerrado())) {
+      STATE.seleccion = "__general__";
+    }
+    sel.value = STATE.seleccion === "__rechazos__" || STATE.seleccion === "__cierre__" ? "__general__" : STATE.seleccion;
+  }
+
+  // ---- Meses cerrados: la foto final de cada mes ------------------------
+  // data.js trae el mes en curso. Cada mes cerrado tiene su foto COMPLETA en
+  // meses/<mes>.js (todos los días, motivos, estadísticas, rechazos...), que el
+  // robot rehace cada día desde la base de Gescom: si algo de un mes cerrado
+  // cambia, la foto se actualiza sola. Al elegir un mes se cambian los datos de
+  // TODO el panel (resumen y detalle de cada fletero) por los de esa foto.
+  // Pedido de Lucas, 2/10/2026. No es la tabla de premios del día 10.
+  var DATA_EN_CURSO = null;   // el data.js original, para volver al mes en curso
+
+  function mesCerrado() {
+    return !!(window.__PPP_DATA__ && window.__PPP_DATA__.cerrado);
+  }
+
+  function nombreMes(m) {
+    return (NOMBRES_MES[parseInt(m.slice(5), 10) - 1] || m) + " " + m.slice(0, 4);
+  }
+
+  function usarDatos(d) {
+    window.__PPP_DATA__ = d;
+    prepararDatos(d.registros || []);
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }
+
+  function verMes(mes) {
+    if (!DATA_EN_CURSO) DATA_EN_CURSO = window.__PPP_DATA__;
+    if (!mes) { usarDatos(DATA_EN_CURSO); return; }
+    window.__PPP_MESES__ = window.__PPP_MESES__ || {};
+    if (window.__PPP_MESES__[mes]) { usarDatos(window.__PPP_MESES__[mes]); return; }
+    var main = $("#panel");
+    if (main) main.innerHTML = '<p class="muted">Cargando ' + nombreMes(mes) + '…</p>';
+    var s = document.createElement("script");
+    // ?v= : la foto se rehace todos los días, que no quede una vieja guardada
+    s.src = "meses/" + mes + ".js?v=" + Date.now();
+    s.onload = function () {
+      if (window.__PPP_MESES__[mes]) { usarDatos(window.__PPP_MESES__[mes]); }
+      else { s.onerror(); }
+    };
+    s.onerror = function () {
+      if (main) main.innerHTML = '<p class="muted">No pude cargar ' + nombreMes(mes) + '. Probá de nuevo en un rato.</p>';
+      var ms = $("#mes-sel"); if (ms) ms.value = "";
+      window.__PPP_DATA__ = DATA_EN_CURSO;
+    };
+    document.head.appendChild(s);
+  }
+
+  // El selector "Mes" va al lado de "Ver", arriba: está en la pantalla inicial y
+  // sigue ahí al entrar al detalle de un fletero.
+  function armarSelectorMes() {
+    var meses = (window.__PPP_DATA__ && window.__PPP_DATA__.mesesDisponibles) || [];
+    var regs = (window.__PPP_DATA__ && window.__PPP_DATA__.registros) || [];
+    var max = "";
+    regs.forEach(function (r) { if (r.fecha > max) max = r.fecha; });
+    var enCurso = max ? max.slice(0, 7) : "";
+    meses = meses.filter(function (m) { return m !== enCurso; });
+    if (!meses.length || $("#mes-sel")) return;
+    var cont = $(".controls__in");
+    if (!cont) return;
+    var lab = el("label", null, "Mes:");
+    lab.setAttribute("for", "mes-sel");
+    var wrap = el("div", "select-wrap select-wrap--mes");
+    var opts = '<option value="">' + (enCurso ? nombreMes(enCurso) + " (en curso)" : "Mes en curso") + '</option>';
+    meses.forEach(function (m) { opts += '<option value="' + m + '">' + nombreMes(m) + ' (cerrado)</option>'; });
+    wrap.innerHTML = '<select id="mes-sel" aria-label="Elegí el mes">' + opts + '</select>';
+    // etiqueta y selector juntos: en el celular bajan de renglón los dos
+    var grupo = el("div", "mesgrupo");
+    grupo.appendChild(lab);
+    grupo.appendChild(wrap);
+    cont.insertBefore(grupo, $("#origen"));
+    var ms = $("#mes-sel");
+    ms.addEventListener("change", function () { verMes(ms.value); });
   }
 
   function ultimaActualizacion(registros) {
     var max = "";
     registros.forEach(function (r) { if (r.fecha > max) max = r.fecha; });
+    var caja = $(".hero__update");
+    if (!caja) return;
+    if (!caja._original) caja._original = caja.innerHTML;
+    if (mesCerrado() && max) {
+      caja.innerHTML = '<span class="dot dot--cerrado"></span> Mes cerrado: <b id="update-date">' + nombreMes(max.slice(0, 7)) + '</b>';
+      return;
+    }
+    caja.innerHTML = caja._original;
     var lbl = $("#update-date");
     if (lbl) lbl.textContent = max ? fmtFecha(max) + " de " + (max.split("-")[0]) : "—";
   }
@@ -1096,6 +1163,7 @@
 
   function init() {
     safe(cargar, "cargar");
+    safe(armarSelectorMes, "armarSelectorMes");
     setTimeout(ocultarSplash, 550);   // ocultar splash cuando ya hay datos
   }
 
