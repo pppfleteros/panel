@@ -331,6 +331,108 @@
     return box;
   }
 
+  // ---- Tablero de indicadores por fletero (como el de Pepsico) -----------
+  // Pedido de Lucas (5/10/2026, con la foto del tablero "Indicadores Diarios de
+  // Despacho"): por fletero, las 6 filas de indicadores y las columnas de lunes a
+  // sábado de UNA semana, más la columna Semana. Sin Objetivo ni Acum. mes. El mes
+  // es el del selector "Mes" de arriba; la semana se elige en la tarjeta.
+  var FILAS_TABLERO = [
+    { k: "rech",   t: "Rechazos % ($)" },
+    { k: "carton", t: "Retorno de cartón %" },
+    { k: "fdr",    t: "Fuera de ruta %" },
+    { k: "unid",   t: "Unidades entregadas" },
+    { k: "cli",    t: "Clientes por día" },
+    { k: "efE",    t: "Efectividad de entrega %" }
+  ];
+  var DIAS_TABLERO = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+  var STATE_TABLERO = { mes: "", lunes: "" };   // la semana elegida, por mes
+
+  function isoDe(d) {
+    var m = d.getMonth() + 1, dd = d.getDate();
+    return d.getFullYear() + "-" + (m < 10 ? "0" : "") + m + "-" + (dd < 10 ? "0" : "") + dd;
+  }
+  function lunesDe(iso) {
+    var d = new Date(iso + "T00:00:00");
+    d.setDate(d.getDate() - ((d.getDay() + 6) % 7));   // domingo cuenta con su semana
+    return isoDe(d);
+  }
+  function masDias(iso, n) {
+    var d = new Date(iso + "T00:00:00");
+    d.setDate(d.getDate() + n);
+    return isoDe(d);
+  }
+  function ddmm(iso) { return parseInt(iso.slice(8), 10) + "/" + parseInt(iso.slice(5, 7), 10); }
+
+  // Un valor del tablero, con el mismo cálculo y los mismos colores que las
+  // tarjetas por día (valorDia / colorInd).
+  function celdaTablero(v, k) {
+    var ind = INDICADORES.filter(function (x) { return x.k === k; })[0];
+    if (v == null) return '<td class="tablero__v ind__v--n">—</td>';
+    var txt = ind.u === "%" ? Math.round(v) + "%" : fmtNum(v);
+    return '<td class="tablero__v ind__v--' + colorInd(v, ind) + '">' + txt + '</td>';
+  }
+
+  function tarjetaTablero(datos, mesPrefijo) {
+    var fechasMes = fechasUnicas(datos.registros).filter(function (f) { return f.indexOf(mesPrefijo) === 0; });
+    if (!fechasMes.length) return null;
+    var semanas = [];
+    fechasMes.forEach(function (f) { var l = lunesDe(f); if (semanas.indexOf(l) < 0) semanas.push(l); });
+    semanas.sort().reverse();   // la más reciente primero
+
+    var card = el("div", "chart tablero reveal");
+    var opts = semanas.map(function (l) {
+      return '<option value="' + l + '">Semana del ' + ddmm(l) + ' al ' + ddmm(masDias(l, 5)) + '</option>';
+    }).join("");
+    card.innerHTML =
+      '<div class="tablero__cab"><h2 class="chart__title">📋 Indicadores por fletero</h2>' +
+      '<div class="select-wrap tablero__sel"><select aria-label="Elegí la semana">' + opts + '</select></div></div>' +
+      '<div class="tablero__scroll"></div>' +
+      '<p class="tablero__nota">Semana: los % salen de la suma de la semana; unidades = total de la semana; ' +
+      'clientes por día = promedio de los días que repartió.</p>';
+    var sel = card.querySelector("select");
+    var caja = card.querySelector(".tablero__scroll");
+
+    function pintar(lunes) {
+      var dias = [0, 1, 2, 3, 4, 5].map(function (i) { return masDias(lunes, i); });
+      var head = '<tr><th class="tablero__ind">Indicador</th>' + dias.map(function (d, i) {
+        return '<th>' + DIAS_TABLERO[i] + '<span>' + ddmm(d) + '</span></th>';
+      }).join("") + '<th class="tablero__sem">Semana</th></tr>';
+      var body = "";
+      Object.keys(datos.porFletero).sort().forEach(function (n) {
+        var porDia = {};
+        datos.porFletero[n].regs.forEach(function (r) { if (dias.indexOf(r.fecha) >= 0) porDia[r.fecha] = r; });
+        var conReparto = dias.filter(function (d) {
+          var r = porDia[d]; return r && ((r.repartos || 0) > 0 || (r.entregas_asignadas || 0) > 0);
+        });
+        if (!conReparto.length) return;   // no salió esa semana
+        // la columna Semana: todo sumado (mismo criterio que los anillos)
+        var sem = sumarPorDia(conReparto.map(function (d) { return porDia[d]; }).map(function (r) {
+          var c = {}; for (var x in r) c[x] = r[x]; c.fecha = "semana"; return c;
+        }))[0];
+        body += '<tr class="tablero__flet"><th colspan="8">' + n + '</th></tr>';
+        FILAS_TABLERO.forEach(function (f) {
+          body += '<tr><th class="tablero__ind">' + f.t + '</th>';
+          dias.forEach(function (d) { body += celdaTablero(porDia[d] ? valorDia(porDia[d], f.k) : null, f.k); });
+          var vs = f.k === "cli" ? (sem.clientes / conReparto.length) : valorDia(sem, f.k);
+          body += celdaTablero(vs, f.k).replace('class="tablero__v', 'class="tablero__v tablero__sem') + '</tr>';
+        });
+      });
+      caja.innerHTML = body
+        ? '<table class="tablero__tabla"><thead>' + head + '</thead><tbody>' + body + '</tbody></table>'
+        : '<p class="muted">Nadie salió a repartir esa semana.</p>';
+    }
+
+    var elegida = (STATE_TABLERO.mes === mesPrefijo && semanas.indexOf(STATE_TABLERO.lunes) >= 0)
+      ? STATE_TABLERO.lunes : semanas[0];
+    sel.value = elegida;
+    pintar(elegida);
+    sel.addEventListener("change", function () {
+      STATE_TABLERO.mes = mesPrefijo; STATE_TABLERO.lunes = sel.value;
+      pintar(sel.value);
+    });
+    return card;
+  }
+
   // Junta los registros de TODOS los fleteros en uno solo por día, para las
   // tarjetas de la pantalla general: cada indicador sale de la suma del día
   // (no del promedio de los fleteros), igual que los anillos de la empresa.
@@ -825,6 +927,10 @@
       "💰 Premios por retorno de cartón: de 60% a 69,99% cobrás <b>$50.000</b> · de 70% a 79,99% cobrás <b>$100.000</b> · de 80% a 100% cobrás <b>$150.000</b>. Requisito: " + ASIST_MIN + "% de asistencia o más.");
     if (rankE) cont.appendChild(rankE);
     if (rankR) cont.appendChild(rankR);
+
+    // Tablero de indicadores por fletero y semana (como el de Pepsico)
+    var tablero = tarjetaTablero(datos, mesPrefijo);
+    if (tablero) cont.appendChild(tablero);
 
     // ---- Indicadores: una tarjeta por día del mes, con TODOS los fleteros ----
     // Cada indicador es el total del día (suma de todos), no el promedio de los

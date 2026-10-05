@@ -526,6 +526,37 @@ main { max-width: 1080px; margin: 0 auto; padding: 22px 20px 60px; }
 .dot--cerrado { background: #E2B04A !important; box-shadow: 0 0 0 4px rgba(226, 176, 74, .25) !important; }
 @media print { .mescerrado { display: none; } }
 
+/* ---------- Tablero de indicadores por fletero (como el de Pepsico) ---------- */
+.tablero { margin-top: 18px; }
+.tablero__cab { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+.tablero__cab .chart__title { margin-bottom: 0; }
+.tablero__sel { flex: 0 1 260px; min-width: 210px; }
+.tablero__sel select {
+  width: 100%; appearance: none; -webkit-appearance: none;
+  font-family: var(--font); font-size: 14px; font-weight: 600; color: var(--ink);
+  padding: 9px 34px 9px 12px; border: 1.5px solid var(--line); border-radius: 10px; background: var(--paper); cursor: pointer;
+}
+.tablero__scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid var(--line); border-radius: var(--r-sm); }
+.tablero__tabla { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 640px; }
+.tablero__tabla th, .tablero__tabla td { padding: 7px 8px; border-bottom: 1px solid #EFEAE0; text-align: center; white-space: nowrap; }
+.tablero__tabla thead th {
+  background: #1F4E79; color: #fff; font-size: 11.5px; font-weight: 800; letter-spacing: .03em; text-transform: uppercase;
+}
+.tablero__tabla thead th span { display: block; font-size: 10.5px; font-weight: 600; opacity: .8; text-transform: none; letter-spacing: 0; }
+.tablero__tabla .tablero__ind {
+  text-align: left; font-weight: 600; color: var(--ink-2); font-size: 12px;
+  position: sticky; left: 0; background: var(--paper); z-index: 1; box-shadow: 1px 0 0 #EFEAE0;
+}
+.tablero__tabla thead .tablero__ind { background: #1F4E79; color: #fff; }
+.tablero__flet th {
+  text-align: left; background: #EEF3EF; color: var(--ink); font-size: 13.5px; font-weight: 800;
+  border-top: 2px solid #1F4E79; position: sticky; left: 0;
+}
+.tablero__v { font-weight: 800; font-variant-numeric: tabular-nums; }
+.tablero__tabla .tablero__sem { background: #F6F3EC; }
+.tablero__tabla thead .tablero__sem { background: #17406A; }
+.tablero__nota { font-size: 11.5px; color: var(--ink-2); margin: 8px 2px 0; line-height: 1.4; }
+
 /* ---------- Fondo oscuro con patrón de reparto (SIEMPRE al final del archivo) ---------- */
 body {
   background-color: #24302A;
