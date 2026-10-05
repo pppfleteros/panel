@@ -394,9 +394,11 @@
 
     function pintar(lunes) {
       var dias = [0, 1, 2, 3, 4, 5].map(function (i) { return masDias(lunes, i); });
-      var head = '<tr><th class="tablero__ind">Indicador</th>' + dias.map(function (d, i) {
+      // Barra azul con los días: se repite en CADA fletero (pedido de Lucas,
+      // 5/10: al bajar se perdía de vista a qué día era cada columna)
+      var columnas = dias.map(function (d, i) {
         return '<th>' + DIAS_TABLERO[i] + '<span>' + ddmm(d) + '</span></th>';
-      }).join("") + '<th class="tablero__sem">Semana</th></tr>';
+      }).join("") + '<th class="tablero__sem">Semana</th>';
       var body = "";
       Object.keys(datos.porFletero).sort().forEach(function (n) {
         var porDia = {};
@@ -405,20 +407,27 @@
           var r = porDia[d]; return r && ((r.repartos || 0) > 0 || (r.entregas_asignadas || 0) > 0);
         });
         if (!conReparto.length) return;   // no salió esa semana
-        // la columna Semana: todo sumado (mismo criterio que los anillos)
-        var sem = sumarPorDia(conReparto.map(function (d) { return porDia[d]; }).map(function (r) {
-          var c = {}; for (var x in r) c[x] = r[x]; c.fecha = "semana"; return c;
+        // la columna Semana: todo sumado (mismo criterio que los anillos). Entran
+        // también los días con cartón anotado y sin reparto: su cartón cuenta y
+        // el resto de sus campos es 0, así que no mueve los demás indicadores.
+        var sem = sumarPorDia(dias.filter(function (d) { return porDia[d]; }).map(function (d) {
+          var r = porDia[d], c = {}; for (var x in r) c[x] = r[x]; c.fecha = "semana"; return c;
         }))[0];
-        body += '<tr class="tablero__flet"><th colspan="8">' + n + '</th></tr>';
+        body += '<tr class="tablero__cabfl"><th class="tablero__ind">' + n + '</th>' + columnas + '</tr>';
         FILAS_TABLERO.forEach(function (f) {
           body += '<tr><th class="tablero__ind">' + f.t + '</th>';
-          dias.forEach(function (d) { body += celdaTablero(porDia[d] ? valorDia(porDia[d], f.k) : null, f.k); });
+          dias.forEach(function (d) {
+            var r = porDia[d];
+            // día con cartón pero sin reparto: solo el cartón, lo demás "—" (no "0")
+            var v = r && (conReparto.indexOf(d) >= 0 || f.k === "carton") ? valorDia(r, f.k) : null;
+            body += celdaTablero(v, f.k);
+          });
           var vs = f.k === "cli" ? (sem.clientes / conReparto.length) : valorDia(sem, f.k);
           body += celdaTablero(vs, f.k).replace('class="tablero__v', 'class="tablero__v tablero__sem') + '</tr>';
         });
       });
       caja.innerHTML = body
-        ? '<table class="tablero__tabla"><thead>' + head + '</thead><tbody>' + body + '</tbody></table>'
+        ? '<table class="tablero__tabla"><tbody>' + body + '</tbody></table>'
         : '<p class="muted">Nadie salió a repartir esa semana.</p>';
     }
 
