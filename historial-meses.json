@@ -629,11 +629,11 @@
                     "actualizado":  "2026-09-30"
                 },
     "2026-10":  {
-                    "boletasEnt":  5865,
+                    "boletasEnt":  5853,
                     "boletasSac":  6211,
                     "efGeneral":  94,
                     "fleteros":  23,
-                    "clientesEnt":  3104,
+                    "clientesEnt":  3101,
                     "cartonGeneral":  59,
                     "clientesSac":  3198,
                     "repartos":  151,
@@ -645,30 +645,6 @@
                                         "asist":  32,
                                         "efE":  98,
                                         "efC":  91,
-                                        "premio":  0
-                                    },
-                                    {
-                                        "nombre":  "Rodrigo Calo",
-                                        "repartos":  6,
-                                        "asist":  27,
-                                        "efE":  98,
-                                        "efC":  76,
-                                        "premio":  0
-                                    },
-                                    {
-                                        "nombre":  "Hector Roldan",
-                                        "repartos":  7,
-                                        "asist":  32,
-                                        "efE":  97,
-                                        "efC":  59,
-                                        "premio":  0
-                                    },
-                                    {
-                                        "nombre":  "Carlos Crespo",
-                                        "repartos":  9,
-                                        "asist":  41,
-                                        "efE":  97,
-                                        "efC":  70,
                                         "premio":  0
                                     },
                                     {
@@ -688,19 +664,27 @@
                                         "premio":  0
                                     },
                                     {
-                                        "nombre":  "Matias Amaya",
+                                        "nombre":  "Hector Roldan",
                                         "repartos":  7,
                                         "asist":  32,
-                                        "efE":  96,
-                                        "efC":  60,
+                                        "efE":  97,
+                                        "efC":  59,
                                         "premio":  0
                                     },
                                     {
-                                        "nombre":  "Norberto Vera",
+                                        "nombre":  "Carlos Crespo",
+                                        "repartos":  9,
+                                        "asist":  41,
+                                        "efE":  97,
+                                        "efC":  70,
+                                        "premio":  0
+                                    },
+                                    {
+                                        "nombre":  "Rodrigo Calo",
                                         "repartos":  6,
                                         "asist":  27,
-                                        "efE":  96,
-                                        "efC":  0,
+                                        "efE":  97,
+                                        "efC":  76,
                                         "premio":  0
                                     },
                                     {
@@ -712,11 +696,19 @@
                                         "premio":  0
                                     },
                                     {
-                                        "nombre":  "Carlos Guillermo Escudero",
+                                        "nombre":  "Matias Amaya",
+                                        "repartos":  7,
+                                        "asist":  32,
+                                        "efE":  96,
+                                        "efC":  60,
+                                        "premio":  0
+                                    },
+                                    {
+                                        "nombre":  "Norberto Vera",
                                         "repartos":  6,
                                         "asist":  27,
                                         "efE":  95,
-                                        "efC":  50,
+                                        "efC":  0,
                                         "premio":  0
                                     },
                                     {
@@ -736,14 +728,6 @@
                                         "premio":  0
                                     },
                                     {
-                                        "nombre":  "Gabriel Flores",
-                                        "repartos":  7,
-                                        "asist":  32,
-                                        "efE":  94,
-                                        "efC":  70,
-                                        "premio":  0
-                                    },
-                                    {
                                         "nombre":  "Pablo Moyano",
                                         "repartos":  7,
                                         "asist":  32,
@@ -760,11 +744,11 @@
                                         "premio":  0
                                     },
                                     {
-                                        "nombre":  "Ariel Riveros",
-                                        "repartos":  5,
-                                        "asist":  23,
-                                        "efE":  93,
-                                        "efC":  56,
+                                        "nombre":  "Gabriel Flores",
+                                        "repartos":  7,
+                                        "asist":  32,
+                                        "efE":  94,
+                                        "efC":  70,
                                         "premio":  0
                                     },
                                     {
@@ -773,6 +757,22 @@
                                         "asist":  32,
                                         "efE":  93,
                                         "efC":  83,
+                                        "premio":  0
+                                    },
+                                    {
+                                        "nombre":  "Ariel Riveros",
+                                        "repartos":  5,
+                                        "asist":  23,
+                                        "efE":  93,
+                                        "efC":  56,
+                                        "premio":  0
+                                    },
+                                    {
+                                        "nombre":  "Carlos Guillermo Escudero",
+                                        "repartos":  6,
+                                        "asist":  27,
+                                        "efE":  92,
+                                        "efC":  50,
                                         "premio":  0
                                     },
                                     {
@@ -824,7 +824,7 @@
                                         "premio":  0
                                     }
                                 ],
-                    "plataRech":  19543092,
+                    "plataRech":  20400839,
                     "actualizado":  "2026-10-09"
                 }
 }
