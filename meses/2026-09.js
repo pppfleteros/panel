@@ -1,6 +1,6 @@
 window.__PPP_MESES__ = window.__PPP_MESES__ || {};
 /* GENERADO AUTOMATICAMENTE por robot-actualizar-web.ps1 - NO EDITAR A MANO
-   Ultima actualizacion: 2026-10-20 12:01 */
+   Ultima actualizacion: 2026-10-21 12:12 */
 window.__PPP_CONFIG_MES__ = {
   SHEET_CSV_URL: "",
   umbrales: { bueno: 90, medio: 75 },
