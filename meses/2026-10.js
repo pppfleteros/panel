@@ -1,6 +1,6 @@
 window.__PPP_MESES__ = window.__PPP_MESES__ || {};
 /* GENERADO AUTOMATICAMENTE por robot-actualizar-web.ps1 - NO EDITAR A MANO
-   Ultima actualizacion: 2026-11-20 15:35 */
+   Ultima actualizacion: 2026-11-23 19:01 */
 window.__PPP_CONFIG_MES__ = {
   SHEET_CSV_URL: "",
   umbrales: { bueno: 90, medio: 75 },
@@ -387,7 +387,7 @@ window.__PPP_MESES__["2026-10"] = { registros: [
 ,{"fecha":"2026-10-26","fletero":"Matias Amaya","zona":"","repartos":1,"entregas_asignadas":40,"entregas_realizadas":39,"cartones_a_retornar":61,"cartones_retornados":5,"clientes":26,"fuera_ruta":2,"sin_ruta":1,"unidades_entregadas":1837,"plata_facturada":4498345,"plata_rechazada":2857}
 ,{"fecha":"2026-10-26","fletero":"Maximiliano Pinazo","zona":"","repartos":1,"entregas_asignadas":7,"entregas_realizadas":7,"cartones_a_retornar":0,"cartones_retornados":0,"clientes":7,"fuera_ruta":4,"sin_ruta":0,"unidades_entregadas":626,"plata_facturada":1553877,"plata_rechazada":0}
 ,{"fecha":"2026-10-26","fletero":"Nicolas Oviedo","zona":"","repartos":1,"entregas_asignadas":51,"entregas_realizadas":48,"cartones_a_retornar":43,"cartones_retornados":12,"clientes":31,"fuera_ruta":27,"sin_ruta":1,"unidades_entregadas":1464,"plata_facturada":4152362,"plata_rechazada":243484}
-,{"fecha":"2026-10-26","fletero":"Pablo Moyano","zona":"","repartos":1,"entregas_asignadas":61,"entregas_realizadas":61,"cartones_a_retornar":48,"cartones_retornados":38,"clientes":33,"fuera_ruta":2,"sin_ruta":1,"unidades_entregadas":1324,"plata_facturada":4004690,"plata_rechazada":0}
+,{"fecha":"2026-10-26","fletero":"Pablo Moyano","zona":"","repartos":1,"entregas_asignadas":61,"entregas_realizadas":61,"cartones_a_retornar":48,"cartones_retornados":38,"clientes":33,"fuera_ruta":3,"sin_ruta":1,"unidades_entregadas":1324,"plata_facturada":4004690,"plata_rechazada":0}
 ,{"fecha":"2026-10-26","fletero":"Rodrigo Calo","zona":"","repartos":1,"entregas_asignadas":57,"entregas_realizadas":55,"cartones_a_retornar":35,"cartones_retornados":30,"clientes":32,"fuera_ruta":28,"sin_ruta":1,"unidades_entregadas":1167,"plata_facturada":2908942,"plata_rechazada":36357}
 ,{"fecha":"2026-10-26","fletero":"Ruben Salvatierra","zona":"","repartos":1,"entregas_asignadas":23,"entregas_realizadas":16,"cartones_a_retornar":0,"cartones_retornados":0,"clientes":12,"fuera_ruta":1,"sin_ruta":0,"unidades_entregadas":724,"plata_facturada":1868625,"plata_rechazada":772794}
 ,{"fecha":"2026-10-27","fletero":"Ariel Riveros","zona":"","repartos":1,"entregas_asignadas":56,"entregas_realizadas":54,"cartones_a_retornar":58,"cartones_retornados":30,"clientes":29,"fuera_ruta":0,"sin_ruta":1,"unidades_entregadas":1608,"plata_facturada":4188581,"plata_rechazada":38286}
@@ -401,7 +401,7 @@ window.__PPP_MESES__["2026-10"] = { registros: [
 ,{"fecha":"2026-10-27","fletero":"Hector Roldan","zona":"","repartos":1,"entregas_asignadas":54,"entregas_realizadas":43,"cartones_a_retornar":43,"cartones_retornados":40,"clientes":31,"fuera_ruta":1,"sin_ruta":1,"unidades_entregadas":1226,"plata_facturada":2838696,"plata_rechazada":205038}
 ,{"fecha":"2026-10-27","fletero":"Javier Sotelo","zona":"","repartos":1,"entregas_asignadas":53,"entregas_realizadas":51,"cartones_a_retornar":0,"cartones_retornados":0,"clientes":30,"fuera_ruta":2,"sin_ruta":1,"unidades_entregadas":2693,"plata_facturada":5320571,"plata_rechazada":40207}
 ,{"fecha":"2026-10-27","fletero":"Jonathan Pinazo","zona":"","repartos":2,"entregas_asignadas":3,"entregas_realizadas":3,"cartones_a_retornar":0,"cartones_retornados":0,"clientes":3,"fuera_ruta":2,"sin_ruta":0,"unidades_entregadas":360,"plata_facturada":4294243,"plata_rechazada":0}
-,{"fecha":"2026-10-27","fletero":"Julio Moran","zona":"","repartos":2,"entregas_asignadas":95,"entregas_realizadas":93,"cartones_a_retornar":39,"cartones_retornados":35,"clientes":69,"fuera_ruta":41,"sin_ruta":1,"unidades_entregadas":1966,"plata_facturada":6310347,"plata_rechazada":210234}
+,{"fecha":"2026-10-27","fletero":"Julio Moran","zona":"","repartos":2,"entregas_asignadas":95,"entregas_realizadas":93,"cartones_a_retornar":39,"cartones_retornados":35,"clientes":69,"fuera_ruta":40,"sin_ruta":1,"unidades_entregadas":1966,"plata_facturada":6310347,"plata_rechazada":210234}
 ,{"fecha":"2026-10-27","fletero":"Leandro Sanchez","zona":"","repartos":1,"entregas_asignadas":34,"entregas_realizadas":33,"cartones_a_retornar":35,"cartones_retornados":28,"clientes":22,"fuera_ruta":1,"sin_ruta":1,"unidades_entregadas":973,"plata_facturada":2420540,"plata_rechazada":30845}
 ,{"fecha":"2026-10-27","fletero":"Lucas Calvo","zona":"","repartos":1,"entregas_asignadas":4,"entregas_realizadas":4,"cartones_a_retornar":0,"cartones_retornados":0,"clientes":8,"fuera_ruta":2,"sin_ruta":0,"unidades_entregadas":304,"plata_facturada":708525,"plata_rechazada":0}
 ,{"fecha":"2026-10-27","fletero":"Lucas Guiering","zona":"","repartos":1,"entregas_asignadas":5,"entregas_realizadas":2,"cartones_a_retornar":0,"cartones_retornados":0,"clientes":3,"fuera_ruta":2,"sin_ruta":0,"unidades_entregadas":469,"plata_facturada":5714995,"plata_rechazada":1616357}
